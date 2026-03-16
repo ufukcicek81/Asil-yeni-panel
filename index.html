@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Asil Kuyumculuk Panel</title>
+  <meta name="theme-color" content="#b8960c" />
+  <link rel="manifest" id="manifestLink" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.location.search.indexOf("admin") !== -1) {
+        var manifestLink = document.getElementById("manifestLink");
+        if (manifestLink) manifestLink.href = "manifest-admin.json";
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-wrap">
+        <img class="brand-logo" src="https://ufukcicek81.github.io/altin/icon-192.png" alt="Asil Kuyumculuk" />
+        <div>
+          <h1 id="shopName">ASİL KUYUMCULUK</h1>
+          <p id="shopPhone">0380 790 14 04</p>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <button class="ghost-pill" id="modeBtn">⚡ Normal</button>
+        <button class="ghost-pill" id="tvBtn">TV Modu</button>
+        <button class="gold-pill hidden" id="adminBtn">Yönetim</button>
+      </div>
+    </header>
+
+    <section class="status-row">
+      <div class="status-chip" id="statusTime">Son güncelleme: —</div>
+      <div class="status-chip" id="statusSource">Kaynak: bekleniyor</div>
+      <div class="status-chip" id="statusHas">Has Alış: — | Has Satış: —</div>
+    </section>
+
+    <section class="ticker-wrap">
+      <div class="ticker-track" id="tickerTrack">Döviz verisi bekleniyor...</div>
+    </section>
+
+    <main class="layout">
+      <section class="card card-main">
+        <div class="card-head">
+          <h2>Altın Fiyatları</h2>
+        </div>
+        <div class="table-head main-grid">
+          <span>Ürün</span>
+          <span class="ta-r">Alış</span>
+          <span class="ta-r">Satış</span>
+          <span class="ta-r">K.K.</span>
+        </div>
+        <div id="priceRows"></div>
+      </section>
+
+      <aside class="side-column">
+        <section class="card">
+          <div class="card-head">
+            <h2>Döviz Kurları</h2>
+          </div>
+          <div class="table-head side-grid">
+            <span>Döviz</span>
+            <span class="ta-r">Alış</span>
+            <span class="ta-r">Satış</span>
+          </div>
+          <div id="currencyRows"></div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <h2>Hurda Altın</h2>
+          </div>
+          <div class="table-head side-grid">
+            <span>Tür</span>
+            <span class="ta-r">Alış</span>
+            <span class="ta-r">Satış</span>
+          </div>
+          <div id="scrapRows"></div>
+        </section>
+      </aside>
+    </main>
+
+    <div class="footer-note" id="footerNote">Canlı fiyat ekranı hazır.</div>
+  </div>
+
+  <div class="modal-backdrop" id="adminModal">
+    <div class="modal">
+      <div class="modal-top">
+        <h3>Yönetim Paneli</h3>
+        <button class="ghost-pill" id="closeAdminBtn">Kapat</button>
+      </div>
+
+      <div class="modal-scroll">
+        <section class="modal-card">
+          <h4>Genel Bilgiler</h4>
+          <div class="form-grid two">
+            <label>
+              <span>Mağaza Adı</span>
+              <input id="aShopName" type="text" />
+            </label>
+            <label>
+              <span>Telefon</span>
+              <input id="aShopPhone" type="text" />
+            </label>
+            <label>
+              <span>Kredi Kartı Oranı (%)</span>
+              <input id="aKkOran" type="number" step="0.01" />
+            </label>
+            <label>
+              <span>Admin Şifresi</span>
+              <input id="aAdminPass" type="text" />
+            </label>
+            <label>
+              <span>Has Alış Düzeltme</span>
+              <input id="aHasDuzA" type="number" step="0.01" />
+            </label>
+            <label>
+              <span>Has Satış Düzeltme</span>
+              <input id="aHasDuzS" type="number" step="0.01" />
+            </label>
+          </div>
+        </section>
+
+        <section class="modal-card">
+          <div class="section-row">
+            <h4>Ürün İşçilikleri</h4>
+            <div class="small-note">Normal ve hareketli mod ayrı kaydedilir.</div>
+          </div>
+          <div class="form-table product-grid-head">
+            <span>Ürün</span>
+            <span>N Alış</span>
+            <span>N Satış</span>
+            <span>H Alış</span>
+            <span>H Satış</span>
+          </div>
+          <div id="adminProductRows"></div>
+        </section>
+
+        <section class="modal-card">
+          <h4>Yeni Ürün Ekle</h4>
+          <div class="form-grid three">
+            <label>
+              <span>Ürün Adı</span>
+              <input id="newLabel" type="text" />
+            </label>
+            <label>
+              <span>Alış</span>
+              <input id="newAlisX" type="number" step="0.0001" value="0.9930" />
+            </label>
+            <label>
+              <span>Satış</span>
+              <input id="newSatisX" type="number" step="0.0001" value="1.0080" />
+            </label>
+          </div>
+          <div class="button-row">
+            <button class="gold-pill" id="addProductBtn">Ürün Ekle</button>
+          </div>
+        </section>
+
+        <section class="modal-card">
+          <h4>Döviz Düzeltmeleri</h4>
+          <div class="form-table currency-grid-head">
+            <span>Döviz</span>
+            <span>A±</span>
+            <span>S±</span>
+          </div>
+          <div id="adminCurrencyRows"></div>
+        </section>
+
+        <section class="modal-card">
+          <h4>Hurda Katsayıları</h4>
+          <div class="form-table scrap-grid-head">
+            <span>Tür</span>
+            <span>Alış ×</span>
+            <span>Satış ×</span>
+          </div>
+          <div id="adminScrapRows"></div>
+        </section>
+
+        <div class="button-row sticky-actions">
+          <button class="gold-pill" id="saveBtn">Kaydet</button>
+          <button class="ghost-pill" id="resetBtn">Varsayılan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>
