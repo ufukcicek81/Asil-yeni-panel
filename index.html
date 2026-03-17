@@ -1,736 +1,109 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Asil Kuyumculuk</title>
-  <meta name="theme-color" content="#b8960c" />
-  <link rel="manifest" id="manifestLink" href="manifest.json" />
-  <style>
-    :root{
-      --bg:#0b0b0c;
-      --panel:#151517;
-      --panel2:#1d1d20;
-      --line:#2d2d32;
-      --gold:#d4af37;
-      --gold2:#f1d880;
-      --text:#f5ecd1;
-      --muted:#9f9779;
-      --green:#42c46d;
-      --red:#ff6e73;
-      --blue:#73aee2;
-      --shadow:0 20px 60px rgba(0,0,0,.35);
-    }
-    *{box-sizing:border-box}
-    html,body{margin:0;padding:0;background:linear-gradient(180deg,#070708 0%,#101012 100%);color:var(--text);font-family:Arial,sans-serif}
-    body{min-height:100vh}
-    button,input{font:inherit}
-    button{cursor:pointer}
-    .hidden{display:none!important}
-    .ta-r{text-align:right}
-    .app{max-width:1500px;margin:0 auto;padding:16px}
-    .top{
-      display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
-      background:rgba(16,16,18,.94);border:1px solid rgba(212,175,55,.18);border-radius:24px;
-      padding:18px 20px;box-shadow:var(--shadow)
-    }
-    .brand{display:flex;align-items:center;gap:16px}
-    .brand-logo{
-      width:72px;height:72px;border-radius:20px;border:1px solid rgba(212,175,55,.25);
-      object-fit:cover;background:#0d0d0e;box-shadow:0 8px 25px rgba(0,0,0,.28)
-    }
-    #shopName{margin:0;font-size:30px;letter-spacing:.5px}
-    #shopPhone{margin:5px 0 0;color:var(--muted);font-size:15px}
-    .actions{display:flex;gap:10px;flex-wrap:wrap}
-    .btn,.btn-gold{
-      padding:12px 18px;border-radius:999px;border:1px solid var(--line);background:#1b1b1e;color:var(--text);
-      transition:.18s ease
-    }
-    .btn:hover,.btn-gold:hover{transform:translateY(-1px)}
-    .btn-gold{background:linear-gradient(135deg,#b38d11,#d4af37);border-color:#d4af37;color:#fff}
-    .status-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-    .chip{
-      background:rgba(20,20,22,.94);border:1px solid var(--line);border-radius:999px;
-      padding:10px 14px;color:var(--muted)
-    }
-    .ticker{
-      margin-top:14px;background:rgba(20,20,22,.94);border:1px solid var(--line);border-radius:18px;overflow:hidden
-    }
-    .ticker-track{
-      white-space:nowrap;display:inline-block;padding:12px 0 12px 100%;
-      color:var(--gold2);font-weight:700;animation:ticker 30s linear infinite
-    }
-    @keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
-    .layout{display:grid;grid-template-columns:1.6fr .95fr;gap:16px;margin-top:16px}
-    .card{
-      background:rgba(17,17,19,.95);border:1px solid rgba(212,175,55,.14);
-      border-radius:24px;overflow:hidden;box-shadow:var(--shadow)
-    }
-    .card-head{
-      padding:16px 18px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.02),transparent)
-    }
-    .card-head h2{margin:0;color:var(--gold);font-size:18px}
-    .table-head,.row-main,.row-side{
-      display:grid;gap:12px;align-items:center;padding:13px 18px
-    }
-    .table-head{background:#1f1f22;color:var(--muted);font-size:13px;font-weight:700}
-    .main-grid{grid-template-columns:1.5fr 1fr 1fr .95fr}
-    .side-grid{grid-template-columns:1.15fr .9fr .9fr}
-    .row-main{grid-template-columns:1.5fr 1fr 1fr .95fr;border-bottom:1px solid rgba(255,255,255,.045)}
-    .row-side{grid-template-columns:1.15fr .9fr .9fr;border-bottom:1px solid rgba(255,255,255,.045)}
-    .row-main:nth-child(odd),.row-side:nth-child(odd){background:rgba(255,255,255,.015)}
-    .name{font-size:18px;font-weight:700}
-    .buy,.sell,.kk,.side-buy,.side-sell{font-size:18px;font-weight:700;text-align:right}
-    .kk{color:var(--blue)}
-    .side-buy{color:var(--green)}
-    .side-sell{color:var(--red)}
-    .note{
-      margin-top:16px;background:rgba(17,17,19,.95);border:1px solid var(--line);
-      border-radius:18px;padding:12px 16px;color:var(--muted)
-    }
-
-    .modal-backdrop{
-      position:fixed;inset:0;background:rgba(0,0,0,.58);display:none;align-items:center;justify-content:center;
-      padding:18px;z-index:1000
-    }
-    .modal-backdrop.open{display:flex}
-    .modal{
-      width:min(1200px,100%);max-height:92vh;background:#121214;border:1px solid rgba(212,175,55,.16);
-      border-radius:28px;overflow:hidden;box-shadow:var(--shadow)
-    }
-    .modal-top{
-      display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 20px;
-      border-bottom:1px solid var(--line);background:#171719
-    }
-    .modal-top h3{margin:0;color:var(--gold);font-size:20px}
-    .modal-scroll{max-height:calc(92vh - 74px);overflow:auto;padding:18px}
-    .box{
-      background:#171719;border:1px solid var(--line);border-radius:22px;padding:16px;margin-bottom:16px
-    }
-    .box h4{margin:0 0 14px;color:var(--gold);font-size:16px}
-    .form-grid{display:grid;gap:12px}
-    .form-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
-    .form-grid.three{grid-template-columns:1.3fr .9fr .9fr}
-    label span{display:block;margin-bottom:8px;color:var(--muted);font-size:12px}
-    input{
-      width:100%;padding:12px 14px;border-radius:14px;border:1px solid #333;background:#101011;color:var(--text)
-    }
-    input:focus{outline:none;border-color:#caa52f;box-shadow:0 0 0 2px rgba(212,175,55,.12)}
-    .head-mini,.admin-row{
-      display:grid;gap:10px;align-items:center;padding:12px 6px
-    }
-    .head-mini{font-size:12px;color:var(--muted);font-weight:700}
-    .admin-row{border-bottom:1px solid rgba(255,255,255,.045)}
-    .products-head,.products-row{grid-template-columns:1.4fr .85fr .85fr .85fr .85fr}
-    .small-head,.small-row{grid-template-columns:1.4fr .9fr .9fr}
-    .section-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
-    .small-note{font-size:12px;color:var(--muted)}
-    .actions-bottom{display:flex;gap:10px;flex-wrap:wrap}
-    .toast{
-      position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(14px);
-      background:#d4af37;color:#fff;padding:11px 16px;border-radius:999px;opacity:0;pointer-events:none;
-      transition:.25s;z-index:1200;font-weight:700
-    }
-    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-    body.tv-mode .app{max-width:100%;padding:10px}
-    body.tv-mode .name,body.tv-mode .buy,body.tv-mode .sell,body.tv-mode .kk,body.tv-mode .side-buy,body.tv-mode .side-sell{font-size:30px}
-    body.tv-mode .row-main,body.tv-mode .row-side{padding:18px}
-    body.tv-mode .ticker-track{font-size:24px}
-
-    @media (max-width:1100px){
-      .layout{grid-template-columns:1fr}
-    }
-    @media (max-width:760px){
-      .app{padding:12px}
-      .top{padding:16px}
-      #shopName{font-size:24px}
-      .brand-logo{width:58px;height:58px}
-      .actions{width:100%}
-      .form-grid.two,.form-grid.three{grid-template-columns:1fr}
-      .products-head,.products-row,.small-head,.small-row{grid-template-columns:1fr 1fr}
-      .main-grid,.row-main{grid-template-columns:1.2fr .95fr .95fr .85fr}
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asil Kuyumculuk</title>
+<style>
+body{margin:0;background:#0b0f17;color:#fff;font-family:Arial}
+.hidden{display:none}
+.top{display:flex;justify-content:space-between;padding:15px}
+.btn{padding:10px 15px;border-radius:20px;border:none;cursor:pointer}
+.adminBtn{background:gold;color:#000}
+.card{background:#111827;margin:10px;padding:15px;border-radius:15px}
+.ticker{overflow:hidden;white-space:nowrap;background:#000;padding:10px}
+.ticker span{margin-right:30px;color:gold}
+</style>
 </head>
 <body>
-<div class="app">
+
+<div id="adminPanel" class="hidden">
   <div class="top">
-    <div class="brand">
-      <img class="brand-logo" src="icon-192.png" alt="Asil Kuyumculuk Logo" onerror="this.style.display='none'">
-      <div>
-        <h1 id="shopName">Asil Kuyumculuk</h1>
-        <p id="shopPhone">0380 790 14 04</p>
-      </div>
-    </div>
-    <div class="actions">
-      <button class="btn" id="modeBtn">⚡ Normal</button>
-      <button class="btn" id="tvBtn">TV Modu</button>
-      <button class="btn-gold hidden" id="adminBtn">Yönetim</button>
-    </div>
+    <h2>Admin Panel</h2>
+    <button class="btn adminBtn" onclick="switchToCustomer()">Müşteri Görünümü</button>
   </div>
-
-  <div class="status-row">
-    <div class="chip" id="statusTime">Son güncelleme: —</div>
-    <div class="chip" id="statusSource">Kaynak: bekleniyor</div>
-    <div class="chip" id="statusHas">Has Alış: — | Has Satış: —</div>
-  </div>
-
-  <div class="ticker">
-    <div class="ticker-track" id="tickerTrack">Döviz verisi bekleniyor...</div>
-  </div>
-
-  <div class="layout">
-    <div class="card">
-      <div class="card-head"><h2>Altın Fiyatları</h2></div>
-      <div class="table-head main-grid">
-        <span>Ürün</span><span class="ta-r">Alış</span><span class="ta-r">Satış</span><span class="ta-r">K.K.</span>
-      </div>
-      <div id="priceRows"></div>
-    </div>
-
-    <div style="display:flex;flex-direction:column;gap:16px">
-      <div class="card">
-        <div class="card-head"><h2>Döviz Kurları</h2></div>
-        <div class="table-head side-grid">
-          <span>Döviz</span><span class="ta-r">Alış</span><span class="ta-r">Satış</span>
-        </div>
-        <div id="currencyRows"></div>
-      </div>
-
-      <div class="card">
-        <div class="card-head"><h2>Hurda Altın</h2></div>
-        <div class="table-head side-grid">
-          <span>Tür</span><span class="ta-r">Alış</span><span class="ta-r">Satış</span>
-        </div>
-        <div id="scrapRows"></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="note">Tek dosyalı yeni panel sürümü. Admin için URL sonuna <b>?admin</b> ekle.</div>
+  <div id="adminContent"></div>
 </div>
 
-<div class="modal-backdrop" id="adminModal">
-  <div class="modal">
-    <div class="modal-top">
-      <h3>Yönetim Paneli</h3>
-      <button class="btn" id="closeAdminBtn">Kapat</button>
-    </div>
-    <div class="modal-scroll">
-      <div class="box">
-        <h4>Genel Bilgiler</h4>
-        <div class="form-grid two">
-          <label><span>Mağaza Adı</span><input id="aShopName" type="text"></label>
-          <label><span>Telefon</span><input id="aShopPhone" type="text"></label>
-          <label><span>Kredi Kartı Oranı (%)</span><input id="aKkOran" type="number" step="0.01"></label>
-          <label><span>Admin Şifresi</span><input id="aAdminPass" type="text"></label>
-          <label><span>Has Alış Düzeltme</span><input id="aHasDuzA" type="number" step="0.01"></label>
-          <label><span>Has Satış Düzeltme</span><input id="aHasDuzS" type="number" step="0.01"></label>
-        </div>
-      </div>
-
-      <div class="box">
-        <div class="section-row">
-          <h4>Ürün İşçilikleri</h4>
-          <div class="small-note">Normal ve hareketli mod ayrı kaydolur.</div>
-        </div>
-        <div class="head-mini products-head">
-          <span>Ürün</span><span>N Alış</span><span>N Satış</span><span>H Alış</span><span>H Satış</span>
-        </div>
-        <div id="adminProductRows"></div>
-      </div>
-
-      <div class="box">
-        <h4>Yeni Ürün Ekle</h4>
-        <div class="form-grid three">
-          <label><span>Ürün Adı</span><input id="newLabel" type="text"></label>
-          <label><span>Alış</span><input id="newAlisX" type="number" step="0.0001" value="0.9930"></label>
-          <label><span>Satış</span><input id="newSatisX" type="number" step="0.0001" value="1.0080"></label>
-        </div>
-        <div class="actions-bottom" style="margin-top:12px">
-          <button class="btn-gold" id="addProductBtn">Ürün Ekle</button>
-        </div>
-      </div>
-
-      <div class="box">
-        <h4>Döviz Düzeltmeleri</h4>
-        <div class="head-mini small-head">
-          <span>Döviz</span><span>A±</span><span>S±</span>
-        </div>
-        <div id="adminCurrencyRows"></div>
-      </div>
-
-      <div class="box">
-        <h4>Hurda Katsayıları</h4>
-        <div class="head-mini small-head">
-          <span>Tür</span><span>Alış ×</span><span>Satış ×</span>
-        </div>
-        <div id="adminScrapRows"></div>
-      </div>
-
-      <div class="actions-bottom">
-        <button class="btn-gold" id="saveBtn">Kaydet</button>
-        <button class="btn" id="resetBtn">Varsayılan</button>
-      </div>
-    </div>
+<div id="customerPanel">
+  <div class="ticker"><div id="ticker"></div></div>
+  <div class="top">
+    <h2>Asil Kuyumculuk</h2>
   </div>
+  <div id="customerContent"></div>
 </div>
-
-<div class="toast" id="toast"></div>
 
 <script>
-const FIREBASE_URL = 'https://asil-kuyumculuk-2feb6-default-rtdb.firebaseio.com/ayarlar.json';
-const WORKER_URL = 'https://altin-proxy.ufuk87900.workers.dev';
-const STORAGE_KEY = 'asil_single_panel_v1';
+const ENDPOINT = "https://altin-proxy.ufuk87900.workers.dev";
 
-const DOVIZLER = [
-  { id: 'usd', label: 'USD', flag: '🇺🇸' },
-  { id: 'eur', label: 'EUR', flag: '🇪🇺' },
-  { id: 'gbp', label: 'GBP', flag: '🇬🇧' },
-  { id: 'sar', label: 'SAR', flag: '🇸🇦' },
-  { id: 'chf', label: 'CHF', flag: '🇨🇭' }
-];
+function isAdmin(){
+  return window.location.search.includes("admin");
+}
 
-const HURDALAR = [
-  { id: 'hurda22', label: '22 Ayar Hurda', oran: 22/24 },
-  { id: 'hurda14', label: '14 Ayar Hurda', oran: 14/24 },
-  { id: 'hurda8', label: '8 Ayar Hurda', oran: 8/24 }
-];
+function switchToCustomer(){
+  document.getElementById("adminPanel").classList.add("hidden");
+  document.getElementById("customerPanel").classList.remove("hidden");
+}
 
-const ITEMS = [
-  { id: 'ayar24', label: '24 Ayar', defA: 1.0000, defS: 1.0030 },
-  { id: 'ayar22', label: '22 Ayar', defA: 0.9100, defS: 0.9220 },
-  { id: 'tam', label: 'Tam', defA: 0.9930, defS: 1.0080 },
-  { id: 'yarim', label: 'Yarım', defA: 0.9930, defS: 1.0090 },
-  { id: 'ceyrek', label: 'Çeyrek', defA: 0.9920, defS: 1.0100 },
-  { id: 'besli', label: 'Beşli', defA: 0.9930, defS: 1.0080 },
-  { id: 'yarimbes', label: 'Yarım Beşli', defA: 0.9930, defS: 1.0085 },
-  { id: 'resat', label: 'Reşat', defA: 0.9930, defS: 1.0070 },
-  { id: 'ata', label: 'Ata', defA: 0.9930, defS: 1.0070 },
-  { id: 'gremise', label: 'Gremise', defA: 0.9930, defS: 1.0080 }
-];
+function switchToAdmin(){
+  document.getElementById("customerPanel").classList.add("hidden");
+  document.getElementById("adminPanel").classList.remove("hidden");
+}
 
-const $ = (id) => document.getElementById(id);
+function format(v){
+  if(!v) return "-";
+  let n = Number(String(v).replace(",","."));
+  if(!isNaN(n)) return n.toLocaleString("tr-TR")+" ₺";
+  return v;
+}
 
-let settings = null;
-let hasAlis = null;
-let hasSatis = null;
-let liveData = {};
-let activeMode = localStorage.getItem('asil_mode_single') || 'normal';
-let prevMap = {};
+function normalize(k){
+  return k.toLowerCase().replace(/[^a-z0-9]/g,"");
+}
 
-function num(v){
-  const n = parseFloat(v);
-  return Number.isFinite(n) ? n : 0;
+function isCurrency(k){
+  return ["usd","usdtry","eur","eurtry","gbp","sterlin"].includes(k);
 }
-function money(v){
-  return new Intl.NumberFormat('tr-TR').format(Math.round(v || 0));
-}
-function cur(v){
-  return Number.isFinite(v) ? v.toFixed(2) : '—';
-}
-function toast(text){
-  const t = $('toast');
-  t.textContent = text;
-  t.classList.add('show');
-  clearTimeout(toast._timer);
-  toast._timer = setTimeout(() => t.classList.remove('show'), 1600);
-}
-function defaults(){
-  const labor = {};
-  const laborH = {};
-  ITEMS.forEach((item) => {
-    labor[item.id] = { a: item.defA, s: item.defS };
-    laborH[item.id] = { a: item.defA, s: item.defS };
-  });
-  return {
-    shopName: 'Asil Kuyumculuk',
-    shopPhone: '0380 790 14 04',
-    kkOran: 0,
-    adminPass: '1234',
-    hasDuzA: 0,
-    hasDuzS: 0,
-    labor,
-    laborH,
-    customItems: [],
-    hiddenItems: [],
-    deletedItems: [],
-    dovizDuz: {},
-    hurdaCarp: {}
-  };
-}
-function normalize(raw){
-  const d = defaults();
-  const s = raw || {};
-  d.shopName = s.shopName || d.shopName;
-  d.shopPhone = s.shopPhone || d.shopPhone;
-  d.kkOran = num(s.kkOran);
-  d.adminPass = String(s.adminPass || d.adminPass);
-  d.hasDuzA = num(s.hasDuzA);
-  d.hasDuzS = num(s.hasDuzS);
-  d.hiddenItems = Array.isArray(s.hiddenItems) ? s.hiddenItems.slice() : [];
-  d.deletedItems = Array.isArray(s.deletedItems) ? s.deletedItems.slice() : [];
-  d.customItems = Array.isArray(s.customItems) ? s.customItems.map((x) => ({
-    id: x.id || ('c_' + Date.now()),
-    label: x.label || 'Yeni Ürün',
-    defA: num(x.defA) || 0.9930,
-    defS: num(x.defS) || 1.0080
-  })) : [];
-  d.labor = Object.assign({}, d.labor, s.labor || {});
-  d.laborH = Object.assign({}, d.laborH, s.laborH || {});
-  d.dovizDuz = Object.assign({}, s.dovizDuz || {});
-  d.hurdaCarp = Object.assign({}, s.hurdaCarp || {});
-  d.customItems.forEach((item) => {
-    if (!d.labor[item.id]) d.labor[item.id] = { a: item.defA, s: item.defS };
-    if (!d.laborH[item.id]) d.laborH[item.id] = { a: item.defA, s: item.defS };
-  });
-  return d;
-}
-function saveLocal(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-}
-function loadLocal(){
+
+async function load(){
   try{
-    return normalize(JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'));
+    let res = await fetch(ENDPOINT);
+    let data = await res.json();
+
+    let items = Object.entries(data).map(([k,v])=>({
+      key:normalize(k),
+      name:k,
+      value:(typeof v==="object")?(v.satis||v.price||v):v
+    }));
+
+    let gold = items.filter(x=>!isCurrency(x.key));
+    let currency = items.filter(x=>isCurrency(x.key));
+
+    // CUSTOMER
+    document.getElementById("customerContent").innerHTML =
+      gold.map(x=>`<div class="card"><b>${x.name}</b><br>${format(x.value)}</div>`).join("");
+
+    document.getElementById("ticker").innerHTML =
+      currency.map(x=>`<span>${x.name}: ${format(x.value)}</span>`).join("");
+
+    // ADMIN
+    document.getElementById("adminContent").innerHTML =
+      items.map(x=>`<div class="card"><b>${x.name}</b><br>${format(x.value)}</div>`).join("");
+
   }catch(e){
-    return defaults();
+    console.log(e);
   }
 }
-function saveCloud(){
-  return fetch(FIREBASE_URL, {
-    method:'PUT',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify(settings)
-  }).then(r => r.json());
-}
-function loadCloud(){
-  return fetch(FIREBASE_URL)
-    .then(r => r.json())
-    .then(data => normalize(data))
-    .catch(() => null);
-}
-function adminUrl(){
-  return location.search.includes('admin') || location.hash.includes('admin');
-}
-function activeItems(){
-  return ITEMS.concat(settings.customItems || []).filter((item) => {
-    return !settings.hiddenItems.includes(item.id) && !settings.deletedItems.includes(item.id);
-  });
-}
-function getLabor(item){
-  const map = activeMode === 'hareketli' ? settings.laborH : settings.labor;
-  if (map && map[item.id]) return { a: num(map[item.id].a), s: num(map[item.id].s) };
-  return { a: num(item.defA), s: num(item.defS) };
-}
-function liveValue(id, side){
-  const keys = [
-    id + side,
-    id.toUpperCase() + side,
-    id + side.charAt(0).toUpperCase() + side.slice(1),
-    id.toUpperCase() + side.charAt(0).toUpperCase() + side.slice(1)
-  ];
-  if (id === 'usd') keys.push('USD' + side, 'dolarAlis', 'dolarSatis');
-  if (id === 'eur') keys.push('EUR' + side, 'euroAlis', 'euroSatis');
-  if (id === 'gbp') keys.push('GBP' + side, 'sterlinAlis', 'sterlinSatis');
-  if (id === 'sar') keys.push('SAR' + side, 'riyalAlis', 'riyalSatis');
-  if (id === 'chf') keys.push('CHF' + side, 'frankAlis', 'frankSatis');
-  for (const key of keys) {
-    const raw = liveData[key];
-    if (raw !== undefined && raw !== null && raw !== '') {
-      const p = parseFloat(raw);
-      if (!isNaN(p)) return p;
-    }
-  }
-  return null;
-}
-function currencyValue(id, letter){
-  const raw = liveValue(id, letter === 'A' ? 'Alis' : 'Satis');
-  const duz = num(settings.dovizDuz[id + letter]);
-  if (raw === null) return null;
-  return raw + duz;
-}
-function updateHeader(){
-  $('shopName').textContent = settings.shopName;
-  $('shopPhone').textContent = settings.shopPhone;
-  $('modeBtn').textContent = activeMode === 'hareketli' ? '⚡ Hareketli' : '⚡ Normal';
-  $('statusTime').textContent = 'Son güncelleme: ' + new Date().toLocaleString('tr-TR');
-  $('statusSource').textContent = Object.keys(liveData).length ? 'Kaynak: canlı veri aktif' : 'Kaynak: bekleniyor';
-  $('statusHas').textContent = 'Has Alış: ' + (hasAlis ? money(hasAlis) : '—') + ' | Has Satış: ' + (hasSatis ? money(hasSatis) : '—');
-}
-function renderTicker(){
-  const parts = DOVIZLER.map((d) => {
-    const a = currencyValue(d.id, 'A');
-    const s = currencyValue(d.id, 'S');
-    return d.label + '/TRY ' + cur(a) + ' / ' + cur(s);
-  });
-  $('tickerTrack').textContent = parts.concat(parts).join(' • ');
-}
-function renderPrices(){
-  const box = $('priceRows');
-  box.innerHTML = '';
-  const kkRate = num(settings.kkOran);
-  activeItems().forEach((item) => {
-    const labor = getLabor(item);
-    const a = hasAlis ? hasAlis * labor.a : null;
-    const s = hasSatis ? hasSatis * labor.s : null;
-    const kk = s ? s * (1 + kkRate / 100) : null;
-    const row = document.createElement('div');
-    row.className = 'row-main';
-    const prev = prevMap[item.id];
-    if (prev && s && prev !== s) {
-      row.style.background = s > prev ? 'rgba(67,195,109,.09)' : 'rgba(255,110,115,.09)';
-      setTimeout(() => row.style.background = '', 900);
-    }
-    prevMap[item.id] = s || 0;
-    row.innerHTML = '<div class="name">'+item.label+'</div>'
-      + '<div class="buy">'+(a ? money(a) : '—')+'</div>'
-      + '<div class="sell">'+(s ? money(s) : '—')+'</div>'
-      + '<div class="kk">'+(kk ? money(kk) : '—')+'</div>';
-    box.appendChild(row);
-  });
-}
-function renderCurrencies(){
-  const box = $('currencyRows');
-  box.innerHTML = '';
-  DOVIZLER.forEach((item) => {
-    const a = currencyValue(item.id, 'A');
-    const s = currencyValue(item.id, 'S');
-    const row = document.createElement('div');
-    row.className = 'row-side';
-    row.innerHTML = '<div class="name" style="font-size:16px">'+item.flag+' '+item.label+'</div>'
-      + '<div class="side-buy">'+(a !== null ? cur(a) : '—')+'</div>'
-      + '<div class="side-sell">'+(s !== null ? cur(s) : '—')+'</div>';
-    box.appendChild(row);
-  });
-}
-function renderScrap(){
-  const box = $('scrapRows');
-  box.innerHTML = '';
-  HURDALAR.forEach((item) => {
-    const aCarp = num(settings.hurdaCarp[item.id + 'A']) || item.oran * 0.99;
-    const sCarp = num(settings.hurdaCarp[item.id + 'S']) || item.oran * 1.00;
-    const a = hasAlis ? hasAlis * aCarp : null;
-    const s = hasSatis ? hasSatis * sCarp : null;
-    const row = document.createElement('div');
-    row.className = 'row-side';
-    row.innerHTML = '<div class="name" style="font-size:16px">'+item.label+'</div>'
-      + '<div class="side-buy">'+(a ? money(a) : '—')+'</div>'
-      + '<div class="side-sell">'+(s ? money(s) : '—')+'</div>';
-    box.appendChild(row);
-  });
-}
-function renderAll(){
-  updateHeader();
-  renderTicker();
-  renderPrices();
-  renderCurrencies();
-  renderScrap();
-}
-function fetchLive(){
-  fetch(WORKER_URL, { cache:'no-store' })
-    .then(r => r.json())
-    .then(data => {
-      liveData = data || {};
-      const a = parseFloat(data.hasAlis || data.HasAlis || data.hasalis || data.HASALIS);
-      const s = parseFloat(data.hasSatis || data.HasSatis || data.hassatis || data.HASSATIS);
-      if (Number.isFinite(a) && a > 100) hasAlis = a + num(settings.hasDuzA);
-      if (Number.isFinite(s) && s > 100) hasSatis = s + num(settings.hasDuzS);
-      renderAll();
-    })
-    .catch(() => renderAll());
-}
-function fillAdminGeneral(){
-  $('aShopName').value = settings.shopName || '';
-  $('aShopPhone').value = settings.shopPhone || '';
-  $('aKkOran').value = num(settings.kkOran);
-  $('aAdminPass').value = settings.adminPass || '1234';
-  $('aHasDuzA').value = num(settings.hasDuzA);
-  $('aHasDuzS').value = num(settings.hasDuzS);
-}
-function renderAdminProducts(){
-  const box = $('adminProductRows');
-  box.innerHTML = '';
-  activeItems().forEach((item) => {
-    const n = settings.labor[item.id] || { a:item.defA, s:item.defS };
-    const h = settings.laborH[item.id] || { a:item.defA, s:item.defS };
-    const row = document.createElement('div');
-    row.className = 'admin-row products-row';
-    row.innerHTML = '<div>'+item.label+'</div>'
-      + '<input data-kind="nA" data-id="'+item.id+'" type="number" step="0.0001" value="'+num(n.a).toFixed(4)+'">'
-      + '<input data-kind="nS" data-id="'+item.id+'" type="number" step="0.0001" value="'+num(n.s).toFixed(4)+'">'
-      + '<input data-kind="hA" data-id="'+item.id+'" type="number" step="0.0001" value="'+num(h.a).toFixed(4)+'">'
-      + '<input data-kind="hS" data-id="'+item.id+'" type="number" step="0.0001" value="'+num(h.s).toFixed(4)+'">';
-    box.appendChild(row);
-  });
-}
-function renderAdminCurrencies(){
-  const box = $('adminCurrencyRows');
-  box.innerHTML = '';
-  DOVIZLER.forEach((item) => {
-    const row = document.createElement('div');
-    row.className = 'admin-row small-row';
-    row.innerHTML = '<div>'+item.flag+' '+item.label+'</div>'
-      + '<input data-cur="'+item.id+'A" type="number" step="0.01" value="'+num(settings.dovizDuz[item.id + 'A'])+'">'
-      + '<input data-cur="'+item.id+'S" type="number" step="0.01" value="'+num(settings.dovizDuz[item.id + 'S'])+'">';
-    box.appendChild(row);
-  });
-}
-function renderAdminScrap(){
-  const box = $('adminScrapRows');
-  box.innerHTML = '';
-  HURDALAR.forEach((item) => {
-    const a = num(settings.hurdaCarp[item.id + 'A']) || item.oran * 0.99;
-    const s = num(settings.hurdaCarp[item.id + 'S']) || item.oran * 1.00;
-    const row = document.createElement('div');
-    row.className = 'admin-row small-row';
-    row.innerHTML = '<div>'+item.label+'</div>'
-      + '<input data-scrap="'+item.id+'A" type="number" step="0.0001" value="'+a.toFixed(4)+'">'
-      + '<input data-scrap="'+item.id+'S" type="number" step="0.0001" value="'+s.toFixed(4)+'">';
-    box.appendChild(row);
-  });
-}
-function openAdmin(){
-  fillAdminGeneral();
-  renderAdminProducts();
-  renderAdminCurrencies();
-  renderAdminScrap();
-  $('adminModal').classList.add('open');
-}
-function closeAdmin(){
-  $('adminModal').classList.remove('open');
-}
-function adminLogin(){
-  if (sessionStorage.getItem('asil_admin_single') === '1') {
-    openAdmin();
-    return;
-  }
-  const entered = prompt('Yönetici şifresi:');
-  if (entered === null) return;
-  if (String(entered).trim() === String(settings.adminPass || '1234').trim()) {
-    sessionStorage.setItem('asil_admin_single', '1');
-    openAdmin();
-  } else {
-    alert('Hatalı şifre!');
-  }
-}
-function addProduct(){
-  const label = $('newLabel').value.trim();
-  const a = num($('newAlisX').value) || 0.9930;
-  const s = num($('newSatisX').value) || 1.0080;
-  if (!label) {
-    toast('Ürün adı girin');
-    return;
-  }
-  const id = 'c_' + Date.now();
-  settings.customItems.push({ id:id, label:label, defA:a, defS:s });
-  settings.labor[id] = { a:a, s:s };
-  settings.laborH[id] = { a:a, s:s };
-  saveLocal();
-  $('newLabel').value = '';
-  $('newAlisX').value = '0.9930';
-  $('newSatisX').value = '1.0080';
-  renderAdminProducts();
-  renderPrices();
-  toast('Ürün eklendi');
-}
-function readAdmin(){
-  settings.shopName = $('aShopName').value.trim() || settings.shopName;
-  settings.shopPhone = $('aShopPhone').value.trim() || settings.shopPhone;
-  settings.kkOran = num($('aKkOran').value);
-  settings.adminPass = $('aAdminPass').value.trim() || '1234';
-  settings.hasDuzA = num($('aHasDuzA').value);
-  settings.hasDuzS = num($('aHasDuzS').value);
 
-  $('adminProductRows').querySelectorAll('input').forEach((inp) => {
-    const id = inp.dataset.id;
-    if (!settings.labor[id]) settings.labor[id] = { a:0, s:0 };
-    if (!settings.laborH[id]) settings.laborH[id] = { a:0, s:0 };
-    const v = num(inp.value);
-    if (inp.dataset.kind === 'nA') settings.labor[id].a = v;
-    if (inp.dataset.kind === 'nS') settings.labor[id].s = v;
-    if (inp.dataset.kind === 'hA') settings.laborH[id].a = v;
-    if (inp.dataset.kind === 'hS') settings.laborH[id].s = v;
-  });
-
-  $('adminCurrencyRows').querySelectorAll('input').forEach((inp) => {
-    settings.dovizDuz[inp.dataset.cur] = num(inp.value);
-  });
-
-  $('adminScrapRows').querySelectorAll('input').forEach((inp) => {
-    settings.hurdaCarp[inp.dataset.scrap] = num(inp.value);
-  });
+if(isAdmin()){
+  switchToAdmin();
+}else{
+  switchToCustomer();
 }
-function resetAll(){
-  if (!confirm('Varsayılan ayarlara dönülsün mü?')) return;
-  settings = defaults();
-  saveLocal();
-  renderAll();
-  fillAdminGeneral();
-  renderAdminProducts();
-  renderAdminCurrencies();
-  renderAdminScrap();
-  toast('Varsayılanlar yüklendi');
-}
-function toggleTv(){
-  document.body.classList.toggle('tv-mode');
-  if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen?.().catch(() => {});
-  } else {
-    document.exitFullscreen?.().catch(() => {});
-  }
-}
-function init(){
-  settings = loadLocal();
-  renderAll();
 
-  loadCloud().then((cloud) => {
-    if (cloud) {
-      settings = cloud;
-      saveLocal();
-      renderAll();
-    }
-    fetchLive();
-    setInterval(fetchLive, 15000);
-  });
-
-  if (adminUrl()) $('adminBtn').classList.remove('hidden');
-
-  $('modeBtn').addEventListener('click', () => {
-    activeMode = activeMode === 'normal' ? 'hareketli' : 'normal';
-    localStorage.setItem('asil_mode_single', activeMode);
-    renderAll();
-    toast(activeMode === 'hareketli' ? 'Hareketli mod aktif' : 'Normal mod aktif');
-  });
-
-  $('tvBtn').addEventListener('click', toggleTv);
-  $('adminBtn').addEventListener('click', adminLogin);
-  $('closeAdminBtn').addEventListener('click', closeAdmin);
-  $('adminModal').addEventListener('click', (e) => {
-    if (e.target === $('adminModal')) closeAdmin();
-  });
-
-  $('addProductBtn').addEventListener('click', addProduct);
-
-  $('saveBtn').addEventListener('click', () => {
-    readAdmin();
-    saveLocal();
-    saveCloud()
-      .then(() => {
-        renderAll();
-        closeAdmin();
-        toast('Kaydedildi');
-      })
-      .catch(() => {
-        renderAll();
-        closeAdmin();
-        toast('Yerelde kaydedildi');
-      });
-  });
-
-  $('resetBtn').addEventListener('click', resetAll);
-}
-document.addEventListener('DOMContentLoaded', init);
+load();
+setInterval(load,60000);
 </script>
+
 </body>
 </html>
