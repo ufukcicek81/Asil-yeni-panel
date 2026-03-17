@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Asil Kuyumculuk</title>
   <meta name="theme-color" content="#b8960c" />
+  <link rel="manifest" id="manifestLink" href="manifest.json" />
   <style>
     :root{
       --bg:#0b0b0c;
@@ -34,12 +35,10 @@
       padding:18px 20px;box-shadow:var(--shadow)
     }
     .brand{display:flex;align-items:center;gap:16px}
-    .brand-badge{
-      width:68px;height:68px;border-radius:20px;border:1px solid rgba(212,175,55,.25);
-      display:flex;align-items:center;justify-content:center;
-      background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.08),transparent 45%),linear-gradient(135deg,#171717,#0c0c0d)
+    .brand-logo{
+      width:72px;height:72px;border-radius:20px;border:1px solid rgba(212,175,55,.25);
+      object-fit:cover;background:#0d0d0e;box-shadow:0 8px 25px rgba(0,0,0,.28)
     }
-    .brand-badge span{font-size:30px;font-weight:700;color:var(--gold2)}
     #shopName{margin:0;font-size:30px;letter-spacing:.5px}
     #shopPhone{margin:5px 0 0;color:var(--muted);font-size:15px}
     .actions{display:flex;gap:10px;flex-wrap:wrap}
@@ -146,7 +145,7 @@
       .app{padding:12px}
       .top{padding:16px}
       #shopName{font-size:24px}
-      .brand-badge{width:58px;height:58px}
+      .brand-logo{width:58px;height:58px}
       .actions{width:100%}
       .form-grid.two,.form-grid.three{grid-template-columns:1fr}
       .products-head,.products-row,.small-head,.small-row{grid-template-columns:1fr 1fr}
@@ -158,9 +157,9 @@
 <div class="app">
   <div class="top">
     <div class="brand">
-      <div class="brand-badge"><span>AS</span></div>
+      <img class="brand-logo" src="logo.png" alt="Asil Kuyumculuk Logo" onerror="this.style.display='none'">
       <div>
-        <h1 id="shopName">ASİL KUYUMCULUK</h1>
+        <h1 id="shopName">Asil Kuyumculuk</h1>
         <p id="shopPhone">0380 790 14 04</p>
       </div>
     </div>
@@ -346,7 +345,7 @@ function defaults(){
     laborH[item.id] = { a: item.defA, s: item.defS };
   });
   return {
-    shopName: 'ASİL KUYUMCULUK',
+    shopName: 'Asil Kuyumculuk',
     shopPhone: '0380 790 14 04',
     kkOran: 0,
     adminPass: '1234',
@@ -436,7 +435,6 @@ function liveValue(id, side){
   if (id === 'gbp') keys.push('GBP' + side, 'sterlinAlis', 'sterlinSatis');
   if (id === 'sar') keys.push('SAR' + side, 'riyalAlis', 'riyalSatis');
   if (id === 'chf') keys.push('CHF' + side, 'frankAlis', 'frankSatis');
-
   for (const key of keys) {
     const raw = liveData[key];
     if (raw !== undefined && raw !== null && raw !== '') {
