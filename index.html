@@ -653,29 +653,38 @@ var fallbackDoviz = {};
 function parseNum(v) {
   if (v === null || v === undefined || v === '') return 0;
   if (typeof v === 'number') return v;
+
   var s = String(v).trim();
+
   if (s.indexOf('.') !== -1 && s.indexOf(',') !== -1) {
     s = s.replace(/\./g, '').replace(',', '.');
     return parseFloat(s) || 0;
   }
+
   if (s.indexOf(',') !== -1) {
     s = s.replace(',', '.');
     return parseFloat(s) || 0;
   }
+
   return parseFloat(s) || 0;
 }
 
 function normalizeWorkerData(data) {
   if (!data) return {};
+
   return {
     usdAlis: parseNum(data.usdAlis),
     usdSatis: parseNum(data.usdSatis),
+
     eurAlis: parseNum(data.eurAlis),
     eurSatis: parseNum(data.eurSatis),
+
     gbpAlis: parseNum(data.gbpAlis),
     gbpSatis: parseNum(data.gbpSatis),
+
     sarAlis: parseNum(data.sarAlis),
     sarSatis: parseNum(data.sarSatis),
+
     chfAlis: parseNum(data.chfAlis),
     chfSatis: parseNum(data.chfSatis)
   };
@@ -701,6 +710,7 @@ function fetchPrices() {
 
   var xhr = new XMLHttpRequest();
   activeXHR = xhr;
+
   xhr.open('GET', WORKER_URL + '?t=' + Date.now(), true);
   xhr.timeout = 10000;
   xhr.setRequestHeader('Cache-Control', 'no-cache, no-store, max-age=0');
@@ -718,10 +728,10 @@ function fetchPrices() {
         var s = parseNum(data.hasSatis);
 
         if (!a || !s || a < 100 || s < 100) {
-          throw new Error('Geçersiz fiyat');
+          throw new Error('Geçersiz has fiyatı');
         }
 
-        hasAlis = a + (parseFloat(settings.hasDuzA) || 0);
+        hasAlis  = a + (parseFloat(settings.hasDuzA) || 0);
         hasSatis = s + (parseFloat(settings.hasDuzS) || 0);
 
         localStorage.setItem('gp10_ha', hasAlis);
@@ -730,17 +740,23 @@ function fetchPrices() {
         liveDoviz = normalizeWorkerData(data);
 
         renderTable();
-        updateDovizBant({});
-        renderEkstraDoviz();
-        renderEkstraHurda();
-        renderDesktopPanel();
 
-        if (document.getElementById('overlay').classList.contains('open')) {
-          renderAdminDoviz();
-          renderAdminHurda();
+        try { updateDovizBant(); } catch(e){ console.log('updateDovizBant hata', e); }
+        try { renderEkstraDoviz(); } catch(e){ console.log('renderEkstraDoviz hata', e); }
+        try { renderEkstraHurda(); } catch(e){ console.log('renderEkstraHurda hata', e); }
+        try { renderDesktopPanel(); } catch(e){ console.log('renderDesktopPanel hata', e); }
+
+        try {
+          if (document.getElementById('overlay').classList.contains('open')) {
+            renderAdminDoviz();
+            renderAdminHurda();
+          }
+        } catch(e) {
+          console.log('admin render hata', e);
         }
 
         setStatus(true);
+
       } catch (e) {
         console.log('FETCH PARSE HATA:', e);
         setStatus(false);
@@ -1111,42 +1127,50 @@ function fetchDovizFallback() {
   xhr.send();
 }
 
-function updateDovizBant(rates) {
-  var src = (liveDoviz && liveDoviz.usdAlis) ? liveDoviz : fallbackDoviz;
+function updateDovizBant() {
   var bantItems = [];
-  if (src && src.usdAlis) {
+
+  if (liveDoviz && liveDoviz.usdAlis) {
     var dovizListesi = [
       { sym:'🇺🇸 USD', id:'usd' },
       { sym:'🇪🇺 EUR', id:'eur' },
       { sym:'🇬🇧 GBP', id:'gbp' },
       { sym:'🇸🇦 SAR', id:'sar' },
-      { sym:'🇨🇭 CHF', id:'chf' },
+      { sym:'🇨🇭 CHF', id:'chf' }
     ];
+
     dovizListesi.forEach(function(d) {
-      var duzA = parseFloat((settings.dovizDuz && settings.dovizDuz[d.id+'A']) || 0);
-      var duzS = parseFloat((settings.dovizDuz && settings.dovizDuz[d.id+'S']) || 0);
-      var alis  = src[d.id+'Alis']  ? (src[d.id+'Alis']  + duzA).toFixed(2) : null;
-      var satis = src[d.id+'Satis'] ? (src[d.id+'Satis'] + duzS).toFixed(2) : null;
-      if (alis && satis) bantItems.push({ sym: d.sym, alis: alis, satis: satis });
+      var duzA = parseFloat((settings.dovizDuz && settings.dovizDuz[d.id + 'A']) || 0);
+      var duzS = parseFloat((settings.dovizDuz && settings.dovizDuz[d.id + 'S']) || 0);
+
+      var alis  = liveDoviz[d.id + 'Alis']  ? (liveDoviz[d.id + 'Alis'] + duzA).toFixed(2) : null;
+      var satis = liveDoviz[d.id + 'Satis'] ? (liveDoviz[d.id + 'Satis'] + duzS).toFixed(2) : null;
+
+      if (alis && satis) {
+        bantItems.push({
+          sym: d.sym,
+          alis: alis,
+          satis: satis
+        });
+      }
     });
-  } else {
-    bantItems = [
-      { sym:'🇺🇸 USD', alis: rates.USD ? rates.USD.toFixed(2) : null, satis: rates.USD ? rates.USD.toFixed(2) : null },
-      { sym:'🇪🇺 EUR', alis: rates.EUR ? rates.EUR.toFixed(2) : null, satis: rates.EUR ? rates.EUR.toFixed(2) : null },
-      { sym:'🇬🇧 GBP', alis: rates.GBP ? rates.GBP.toFixed(2) : null, satis: rates.GBP ? rates.GBP.toFixed(2) : null },
-    ];
   }
+
+  if (!bantItems.length) {
+    document.getElementById('dovizBant').innerHTML = '⏳ Döviz yükleniyor...';
+    return;
+  }
+
   var html = '';
   bantItems.forEach(function(it) {
-    if (!it.alis) return;
     html += '<span class="doviz-item">' + it.sym
       + ' <span class="d-kur" style="color:#5dba6a">' + it.alis + '</span>'
       + '<span style="color:#888;margin:0 2px">/</span>'
       + '<span class="d-kur" style="color:#e07050">' + it.satis + '</span>'
       + ' ₺</span>';
   });
-  var bantEl = document.getElementById('dovizBant');
-  bantEl.innerHTML = html + html;
+
+  document.getElementById('dovizBant').innerHTML = html + html;
 }
 
 // ── ADMİN DÖVİZ & HURDA TABLOSU ──────────────────────────────────────────────
