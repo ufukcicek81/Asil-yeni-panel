@@ -6,9 +6,8 @@
 <title>Asil Kuyumcum</title>
 <link rel="manifest" id="manifestLink" href="manifest.json">
 <script>
-if (new URLSearchParams(window.location.search).has('admin')) {
-  var manifestLink = document.getElementById('manifestLink');
-  if (manifestLink) manifestLink.href = 'manifest-admin.json';
+if (window.location.search.indexOf('admin') !== -1) {
+  document.getElementById('manifestLink').href = 'manifest-admin.json';
 }
 </script>
 <meta name="theme-color" content="#b8960c">
@@ -264,7 +263,7 @@ body {
 
 <div class="bottom-nav" id="bottomNav">
   <button class="nav-item active"><span class="nav-icon">📊</span>Fiyat Panosu</button>
-  <button class="nav-item" id="adminNavBtn" onclick="openAdmin()"><span class="nav-icon">⚙️</span>Yönetici</button>
+  <button class="nav-item" onclick="openAdmin()"><span class="nav-icon">⚙️</span>Yönetici</button>
 </div>
 
 <div class="overlay" id="overlay" onclick="if(event.target===this)closeAdmin()">
@@ -456,11 +455,10 @@ var FIREBASE_URL = 'https://asil-kuyumculuk-2feb6-default-rtdb.firebaseio.com/ay
 var ADMIN_PASS = '1234';
 var IS_ADMIN = false;
 
-// ?admin yoksa sadece yönetici girişleri gizli
+// ?admin yoksa buton gizli
 if (window.location.search.indexOf('admin') === -1) {
   document.getElementById('adminBtn').style.display = 'none';
-  var adminNavBtn = document.getElementById('adminNavBtn');
-  if (adminNavBtn) adminNavBtn.style.display = 'none';
+  document.getElementById('bottomNav').style.display = 'none';
 } else {
   var mb = document.getElementById('modBtn');
   mb.style.display = 'flex';
@@ -472,10 +470,21 @@ function checkAdminSession() {
   return sessionStorage.getItem('gp10_admin') === '1';
 }
 
+function getAdminPass() {
+  try {
+    var local = JSON.parse(localStorage.getItem('gp10') || 'null');
+    if (local && local.adminPass) return String(local.adminPass).trim();
+  } catch(e) {}
+  if (settings && settings.adminPass) return String(settings.adminPass).trim();
+  return String(ADMIN_PASS || '1234').trim();
+}
+
 function openAdminLogin() {
   var pass = prompt('Yönetici şifresi:');
   if (pass === null) return;
-  if (pass === ADMIN_PASS) {
+  var entered = String(pass).trim();
+  var currentPass = getAdminPass();
+  if (entered === currentPass) {
     sessionStorage.setItem('gp10_admin', '1');
     IS_ADMIN = true;
     openAdmin();
@@ -545,8 +554,7 @@ document.getElementById('adminBtn').onclick = function() {
     openAdminLogin();
   }
 };
-var _adminNavBtn = document.getElementById('adminNavBtn');
-if (_adminNavBtn) _adminNavBtn.onclick = function() {
+document.querySelector('.nav-item:last-child').onclick = function() {
   if (checkAdminSession()) {
     IS_ADMIN = true;
     openAdmin();
@@ -638,6 +646,56 @@ function setStatus(ok) {
 var WORKER_URL = 'https://altin-proxy.ufuk87900.workers.dev';
 var activeXHR = null;
 
+function num(v) {
+  var n = parseFloat(v);
+  return isNaN(n) ? null : n;
+}
+
+function pickNumber(obj, keys) {
+  if (!obj) return null;
+  for (var i = 0; i < keys.length; i++) {
+    var k = keys[i];
+    if (obj[k] !== undefined && obj[k] !== null && obj[k] !== '') {
+      var n = num(obj[k]);
+      if (n !== null) return n;
+    }
+  }
+  return null;
+}
+
+function getLivePair(id) {
+  var upper = id.toUpperCase();
+  var alis = pickNumber(liveDoviz, [
+    id + 'Alis', id + 'alis', id + '_alis', id + 'Buy',
+    upper + 'Alis', upper + '_ALIS', upper + 'Buy'
+  ]);
+  var satis = pickNumber(liveDoviz, [
+    id + 'Satis', id + 'satis', id + '_satis', id + 'Sell',
+    upper + 'Satis', upper + '_SATIS', upper + 'Sell'
+  ]);
+  if ((alis === null || satis === null) && liveDoviz[id]) {
+    alis = alis === null ? pickNumber(liveDoviz[id], ['alis','Alis','buy','Buy','a']) : alis;
+    satis = satis === null ? pickNumber(liveDoviz[id], ['satis','Satis','sell','Sell','s']) : satis;
+  }
+  if ((alis === null || satis === null) && liveDoviz[upper]) {
+    alis = alis === null ? pickNumber(liveDoviz[upper], ['alis','Alis','buy','Buy','a']) : alis;
+    satis = satis === null ? pickNumber(liveDoviz[upper], ['satis','Satis','sell','Sell','s']) : satis;
+  }
+  return { alis: alis, satis: satis };
+}
+
+function getHasPricesFromData(data) {
+  var a = pickNumber(data, ['hasAlis','hasalis','HASALIS','xauAlis','gramAltinAlis']);
+  var s = pickNumber(data, ['hasSatis','hassatis','HASSATIS','xauSatis','gramAltinSatis']);
+  if ((a === null || s === null) && data.has) {
+    a = a === null ? pickNumber(data.has, ['alis','Alis','buy','Buy','a']) : a;
+    s = s === null ? pickNumber(data.has, ['satis','Satis','sell','Sell','s']) : s;
+  }
+  if ((a === null || s === null) && data.data) return getHasPricesFromData(data.data);
+  if ((a === null || s === null) && data.prices) return getHasPricesFromData(data.prices);
+  return { alis: a, satis: s };
+}
+
 function applyPrices(a, s) {
   a = a + (parseFloat(settings.hasDuzA) || 0);
   s = s + (parseFloat(settings.hasDuzS) || 0);
@@ -654,41 +712,54 @@ function fetchPrices() {
   if (activeXHR) { try { activeXHR.abort(); } catch(e){} activeXHR = null; }
   var xhr = new XMLHttpRequest();
   activeXHR = xhr;
-  xhr.open('GET', WORKER_URL, true);
+  xhr.open('GET', WORKER_URL + '?t=' + Date.now(), true);
   xhr.timeout = 10000;
+  xhr.setRequestHeader('Cache-Control', 'no-cache, no-store, max-age=0');
   xhr.onload = function() {
     if (activeXHR !== xhr) return;
     activeXHR = null;
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         var data = JSON.parse(xhr.responseText);
-        var a = parseFloat(data.hasAlis);
-        var s = parseFloat(data.hasSatis);
-        if (!a || a < 100) throw new Error('Geçersiz fiyat');
+        liveDoviz = data || {};
+        var has = getHasPricesFromData(data || {});
+        var a = has.alis;
+        var s = has.satis;
+        if (a === null || s === null || a < 100) throw new Error('Geçersiz fiyat');
         if (!applyPrices(a, s)) throw new Error('applyPrices hata');
-        // Döviz verilerini sakla
-        liveDoviz = data;
         updateDovizBant({});
-        // Admin panel açıksa da verileri güncelle; aksi halde masaüstünde boş görünebiliyor
-        if (document.getElementById('adminDovizRows')) renderAdminDoviz();
-        if (document.getElementById('adminHurdaRows')) renderAdminHurda();
         renderEkstraDoviz();
         renderEkstraHurda();
         renderDesktopPanel();
+        if (document.getElementById('adminDovizRows')) renderAdminDoviz();
+        if (document.getElementById('adminHurdaRows')) renderAdminHurda();
       } catch(e) {
+        console.log('fetchPrices parse hata:', e);
         setStatus(false);
-        if (hasAlis) renderTable();
+        if (hasAlis) {
+          renderTable();
+          renderEkstraHurda();
+          renderDesktopPanel();
+        }
       }
     } else {
       setStatus(false);
-      if (hasAlis) renderTable();
+      if (hasAlis) {
+        renderTable();
+        renderEkstraHurda();
+        renderDesktopPanel();
+      }
     }
   };
   xhr.onerror = xhr.ontimeout = function() {
     if (activeXHR !== xhr) return;
     activeXHR = null;
     setStatus(false);
-    if (hasAlis) renderTable();
+    if (hasAlis) {
+      renderTable();
+      renderEkstraHurda();
+      renderDesktopPanel();
+    }
   };
   xhr.send();
 }
@@ -706,7 +777,6 @@ function openAdmin() {
   renderAdminRows();
   renderAdminDoviz();
   renderAdminHurda();
-  renderDesktopPanel();
   document.getElementById('overlay').classList.add('open');
 }
 function closeAdmin() { document.getElementById('overlay').classList.remove('open'); }
@@ -954,7 +1024,6 @@ fetchPrices();
 setInterval(fetchPrices, 5000);
 fetchDoviz();
 setInterval(fetchDoviz, 60000);
-window.addEventListener('resize', renderDesktopPanel);
 
 // Buluttan güncel ayarları çek — max 3 saniye bekle
 var cloudLoaded = false;
@@ -975,6 +1044,11 @@ jsonbinLoad(function(cloud) {
     localStorage.setItem('gp10', JSON.stringify(settings));
     document.getElementById('priceRows').innerHTML = '';
     renderTable();
+    renderEkstraDoviz();
+    renderEkstraHurda();
+    renderDesktopPanel();
+    if (document.getElementById('adminDovizRows')) renderAdminDoviz();
+    if (document.getElementById('adminHurdaRows')) renderAdminHurda();
   }
 });
 
@@ -1031,7 +1105,7 @@ function fetchDovizFallback() {
 function updateDovizBant(rates) {
   // Önce worker'dan gelen liveDoviz varsa onu kullan, yoksa exchangerate'den gelenle devam et
   var bantItems = [];
-  if (liveDoviz && liveDoviz.usdAlis) {
+  if (liveDoviz) {
     var dovizListesi = [
       { sym:'🇺🇸 USD', id:'usd' },
       { sym:'🇪🇺 EUR', id:'eur' },
@@ -1042,8 +1116,9 @@ function updateDovizBant(rates) {
     dovizListesi.forEach(function(d) {
       var duzA = parseFloat((settings.dovizDuz && settings.dovizDuz[d.id+'A']) || 0);
       var duzS = parseFloat((settings.dovizDuz && settings.dovizDuz[d.id+'S']) || 0);
-      var alis  = liveDoviz[d.id+'Alis']  ? (liveDoviz[d.id+'Alis']  + duzA).toFixed(2) : null;
-      var satis = liveDoviz[d.id+'Satis'] ? (liveDoviz[d.id+'Satis'] + duzS).toFixed(2) : null;
+      var pair = getLivePair(d.id);
+      var alis  = pair.alis !== null  ? (pair.alis  + duzA).toFixed(2) : null;
+      var satis = pair.satis !== null ? (pair.satis + duzS).toFixed(2) : null;
       if (alis && satis) bantItems.push({ sym: d.sym, alis: alis, satis: satis });
     });
   } else {
@@ -1070,8 +1145,9 @@ function updateDovizBant(rates) {
 function renderAdminDoviz() {
   var html = '';
   DOVIZLER.forEach(function(d) {
-    var alis  = liveDoviz[d.id+'Alis']  || 0;
-    var satis = liveDoviz[d.id+'Satis'] || 0;
+    var pair = getLivePair(d.id);
+    var alis  = pair.alis || 0;
+    var satis = pair.satis || 0;
     var duzA  = parseFloat((settings.dovizDuz && settings.dovizDuz[d.id+'A']) || 0);
     var duzS  = parseFloat((settings.dovizDuz && settings.dovizDuz[d.id+'S']) || 0);
     var gosterA = alis  ? (alis  + duzA).toFixed(2) : '—';
@@ -1128,8 +1204,9 @@ function renderDesktopPanel() {
   DOVIZLER.forEach(function(d) {
     var duzA  = parseFloat((settings.dovizDuz && settings.dovizDuz[d.id+'A']) || 0);
     var duzS  = parseFloat((settings.dovizDuz && settings.dovizDuz[d.id+'S']) || 0);
-    var alis  = liveDoviz[d.id+'Alis']  ? (liveDoviz[d.id+'Alis']  + duzA).toFixed(2) : '—';
-    var satis = liveDoviz[d.id+'Satis'] ? (liveDoviz[d.id+'Satis'] + duzS).toFixed(2) : '—';
+    var pair = getLivePair(d.id);
+    var alis  = pair.alis !== null ? (pair.alis + duzA).toFixed(2) : '—';
+    var satis = pair.satis !== null ? (pair.satis + duzS).toFixed(2) : '—';
     dovizHtml += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;padding:11px 18px;border-bottom:1px solid #2e2e2e;background:#1a1a1a">'
       + '<span style="font-size:17px;font-weight:600;color:#e8d9b0">' + d.flag + ' ' + d.label + '</span>'
       + '<span style="font-size:17px;font-weight:600;color:#5dba6a;text-align:right">' + alis + '</span>'
@@ -1159,8 +1236,9 @@ function renderEkstraDoviz() {
   if (!el) return;
   var html = '';
   DOVIZLER.forEach(function(d) {
-    var alis  = liveDoviz[d.id+'Alis']  || 0;
-    var satis = liveDoviz[d.id+'Satis'] || 0;
+    var pair = getLivePair(d.id);
+    var alis  = pair.alis || 0;
+    var satis = pair.satis || 0;
     var duzA  = parseFloat((settings.dovizDuz && settings.dovizDuz[d.id+'A']) || 0);
     var duzS  = parseFloat((settings.dovizDuz && settings.dovizDuz[d.id+'S']) || 0);
     var gosterA = alis  ? (alis  + duzA).toFixed(2) : '—';
