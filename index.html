@@ -4,79 +4,33 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Asil Kuyumcum</title>
-
 <style>
-body{margin:0;font-family:Arial;background:#0d0d0d;color:#fff;}
-.header{text-align:center;padding:15px;font-size:24px;font-weight:bold;border-bottom:1px solid #333;}
-.container{display:flex;height:calc(100vh - 60px);}
-.left,.right{flex:1;padding:10px;}
-.card{background:#1a1a1a;margin:10px 0;padding:15px;border-radius:10px;display:flex;justify-content:space-between;font-size:18px;}
-.green{color:#00ff99}.red{color:#ff4d4d}
-.admin-panel{position:fixed;bottom:10px;right:10px;background:#111;padding:10px;border-radius:10px;}
-button{padding:5px 10px;margin:3px;}
+body{margin:0;background:#111;color:#fff;font-family:Arial}
+.header{text-align:center;padding:20px;font-size:24px;color:#d4af37}
+.row{display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid #333}
 </style>
 </head>
-
 <body>
-
 <div class="header">ASİL KUYUMCUM</div>
-
-<div class="container">
-  <div class="left" id="urunler"></div>
-  <div class="right" id="doviz"></div>
-</div>
-
-<div id="adminPanel" class="admin-panel" style="display:none;">
-  <input id="urunAd" placeholder="Ürün adı">
-  <input id="urunFiyat" placeholder="Fiyat">
-  <button onclick="urunEkle()">Ekle</button>
-</div>
+<div id="list"></div>
 
 <script>
+const worker="https://altin-proxy.ufuk87900.workers.dev";
 
-const isAdmin = window.location.search.includes("admin");
-
-let urunler = [
-  {ad:"22 Ayar", fiyat:2450},
-  {ad:"Gram Altın", fiyat:2500}
-];
-
-function renderUrun(){
-  let html="";
-  urunler.forEach(u=>{
-    html+=`<div class="card"><span>${u.ad}</span><span class="green">${u.fiyat}</span></div>`;
-  });
-  document.getElementById("urunler").innerHTML=html;
+function load(){
+ fetch(worker)
+ .then(r=>r.json())
+ .then(d=>{
+   const list=document.getElementById("list");
+   list.innerHTML=`
+   <div class="row"><b>24 Ayar</b><span>${Math.round(d.hasSatis)}</span></div>
+   <div class="row"><b>22 Ayar</b><span>${Math.round(d.hasSatis*0.92)}</span></div>
+   <div class="row"><b>Gram Altın</b><span>${Math.round(d.hasSatis)}</span></div>
+   `;
+ });
 }
-
-function renderDoviz(){
-  if(!isAdmin) return;
-  const data = [
-    {ad:"USD", fiyat:32},
-    {ad:"EUR", fiyat:35}
-  ];
-  let html="";
-  data.forEach(d=>{
-    html+=`<div class="card"><span>${d.ad}</span><span class="green">${d.fiyat}</span></div>`;
-  });
-  document.getElementById("doviz").innerHTML=html;
-}
-
-function urunEkle(){
-  const ad=document.getElementById("urunAd").value;
-  const fiyat=document.getElementById("urunFiyat").value;
-  urunler.push({ad,fiyat});
-  renderUrun();
-}
-
-if(isAdmin){
-  document.getElementById("adminPanel").style.display="block";
-}
-
-renderUrun();
-renderDoviz();
-
+load();
+setInterval(load,5000);
 </script>
-
 </body>
 </html>
