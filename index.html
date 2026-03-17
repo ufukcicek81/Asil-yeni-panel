@@ -1,109 +1,677 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Asil Kuyumculuk</title>
-<style>
-body{margin:0;background:#0b0f17;color:#fff;font-family:Arial}
-.hidden{display:none}
-.top{display:flex;justify-content:space-between;padding:15px}
-.btn{padding:10px 15px;border-radius:20px;border:none;cursor:pointer}
-.adminBtn{background:gold;color:#000}
-.card{background:#111827;margin:10px;padding:15px;border-radius:15px}
-.ticker{overflow:hidden;white-space:nowrap;background:#000;padding:10px}
-.ticker span{margin-right:30px;color:gold}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Asil Kuyumculuk • Tek Dosya Panel</title>
+  <meta name="theme-color" content="#0a0c11" />
+  <style>
+    :root{
+      --bg:#090b10;
+      --bg2:#101726;
+      --panel:rgba(255,255,255,.06);
+      --panel2:rgba(255,255,255,.04);
+      --stroke:rgba(255,255,255,.10);
+      --stroke2:rgba(212,175,55,.18);
+      --text:#f6f2e9;
+      --muted:#a9b2c2;
+      --gold:#d4af37;
+      --gold2:#f3d06a;
+      --gold3:#ffe7a2;
+      --green:#34d399;
+      --red:#fb7185;
+      --shadow:0 22px 70px rgba(0,0,0,.42);
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;padding:0;background:var(--bg);font-family:Inter,Arial,Helvetica,sans-serif;color:var(--text)}
+    body{
+      min-height:100vh;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(212,175,55,.18), transparent 16%),
+        radial-gradient(circle at 90% 8%, rgba(255,255,255,.08), transparent 14%),
+        linear-gradient(180deg, #07090d 0%, #0d121b 44%, #101827 100%);
+    }
+    .page{
+      width:min(100%, 1100px);
+      margin:0 auto;
+      min-height:100vh;
+      padding:18px 14px 30px;
+      position:relative;
+    }
+    .switcher{
+      position:sticky;
+      top:10px;
+      z-index:30;
+      display:flex;
+      justify-content:center;
+      margin-bottom:16px;
+    }
+    .switcherInner{
+      display:inline-flex;
+      gap:8px;
+      padding:8px;
+      border-radius:999px;
+      background:rgba(8,12,18,.86);
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(18px);
+    }
+    .modeBtn{
+      border:none;
+      cursor:pointer;
+      padding:12px 18px;
+      border-radius:999px;
+      font-weight:800;
+      color:var(--muted);
+      background:transparent;
+    }
+    .modeBtn.active{
+      background:linear-gradient(135deg,var(--gold2),var(--gold));
+      color:#111;
+    }
+
+    .screen{display:none}
+    .screen.active{display:block}
+
+    .topbar{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      margin-bottom:16px;
+    }
+    .brand{display:flex;align-items:center;gap:12px;min-width:0}
+    .logo{
+      width:58px;height:58px;border-radius:20px;overflow:hidden;flex:0 0 auto;
+      display:grid;place-items:center;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.08), rgba(255,255,255,.03)),
+        linear-gradient(145deg, rgba(212,175,55,.22), rgba(212,175,55,.06));
+      border:1px solid rgba(212,175,55,.26);
+      box-shadow:var(--shadow);
+    }
+    .logo img{width:100%;height:100%;object-fit:contain;padding:7px;background:#0d1017}
+    .logoFallback{display:none;font-weight:900;color:var(--gold3)}
+    .brandText h1{margin:0;font-size:21px;line-height:1.05}
+    .brandText p{margin:5px 0 0;font-size:13px;color:var(--muted)}
+    .rightActions{display:flex;gap:8px;align-items:center}
+    .live{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:10px 12px;border-radius:999px;
+      background:rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.08);
+      font-size:12px;white-space:nowrap;
+    }
+    .live:before{
+      content:""; width:9px;height:9px;border-radius:50%;
+      background:var(--green); box-shadow:0 0 14px var(--green);
+    }
+    .iconBtn{
+      width:46px;height:46px;border:none;cursor:pointer;border-radius:16px;
+      background:linear-gradient(135deg, var(--gold2), var(--gold));
+      color:#111;font-size:19px;font-weight:900; box-shadow:var(--shadow);
+    }
+
+    .hero{
+      border-radius:34px;
+      padding:22px;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.04)),
+        linear-gradient(135deg, rgba(212,175,55,.18), rgba(212,175,55,.04));
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow:var(--shadow);
+      position:relative;
+      overflow:hidden;
+      margin-bottom:16px;
+    }
+    .hero:before{
+      content:"";
+      position:absolute;
+      right:-70px; top:-90px;
+      width:240px; height:240px; border-radius:50%;
+      background:radial-gradient(circle, rgba(255,231,162,.20), transparent 62%);
+    }
+    .heroTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;position:relative;z-index:1}
+    .heroSub{font-size:12px;text-transform:uppercase;letter-spacing:.35px;color:#f5dfa0}
+    .heroTitle{margin:8px 0 6px;font-size:32px;font-weight:900;letter-spacing:-1.2px}
+    .heroDesc{font-size:13px;color:var(--muted);line-height:1.5;max-width:80%}
+    .heroPriceRow{
+      margin-top:18px;
+      display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end;
+      position:relative;z-index:1;
+    }
+    .heroPrice{
+      font-size:42px;font-weight:900;letter-spacing:-1.6px;color:#fff8e8;line-height:1;
+    }
+    .heroMini{
+      text-align:right;font-size:12px;color:var(--muted);line-height:1.55;
+    }
+
+    .chips{
+      display:flex;gap:10px;overflow:auto;scrollbar-width:none;
+      padding:4px 2px 2px;margin:12px 0 14px;
+    }
+    .chips::-webkit-scrollbar{display:none}
+    .chip{
+      border:none;cursor:pointer;white-space:nowrap;
+      padding:11px 14px;border-radius:999px;
+      background:rgba(255,255,255,.06);color:var(--muted);
+      border:1px solid rgba(255,255,255,.08);font-weight:700;
+    }
+    .chip.active{
+      background:linear-gradient(135deg, rgba(243,208,106,.95), rgba(212,175,55,.95));
+      color:#151515;
+    }
+
+    .stats{
+      display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;
+    }
+    .stat{
+      min-height:104px;padding:15px;border-radius:24px;background:var(--panel);
+      border:1px solid var(--stroke);box-shadow:var(--shadow);position:relative;overflow:hidden;
+    }
+    .stat:before{
+      content:"";position:absolute;right:-20px;bottom:-18px;width:80px;height:80px;border-radius:50%;
+      background:radial-gradient(circle, rgba(212,175,55,.16), transparent 65%);
+    }
+    .statLabel{font-size:11px;color:var(--muted);min-height:28px}
+    .statValue{font-size:21px;font-weight:900;color:#fff8e6;line-height:1.1}
+    .statDelta{margin-top:8px;font-size:11px}
+    .up{color:var(--green)} .down{color:var(--red)}
+
+    .sectionRow{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      margin:8px 2px 12px;
+    }
+    .sectionRow h3{margin:0;font-size:18px}
+    .tag{
+      padding:9px 12px;border-radius:999px;font-size:11px;color:var(--muted);
+      background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);
+      max-width:50%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    }
+
+    .list{
+      display:grid;grid-template-columns:1fr 1fr;gap:14px;
+    }
+    .card{
+      border-radius:28px;padding:18px;
+      background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
+      border:1px solid rgba(255,255,255,.09);box-shadow:var(--shadow);position:relative;overflow:hidden;
+    }
+    .card:after{
+      content:"";position:absolute;width:100px;height:100px;border-radius:50%;
+      right:-28px;bottom:-34px;background:radial-gradient(circle, rgba(212,175,55,.14), transparent 64%);
+    }
+    .cardTop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;position:relative;z-index:1}
+    .left{display:flex;gap:12px;align-items:center;min-width:0}
+    .coin{
+      width:46px;height:46px;border-radius:16px;display:grid;place-items:center;
+      background:linear-gradient(145deg, rgba(243,208,106,.22), rgba(212,175,55,.10));
+      border:1px solid rgba(212,175,55,.22);color:#f7de97;font-weight:900;flex:0 0 auto;
+    }
+    .name{font-size:15px;font-weight:800}
+    .meta{margin-top:4px;font-size:12px;color:var(--muted)}
+    .price{text-align:right;font-size:28px;font-weight:900;color:#fff8e7;letter-spacing:-.5px;position:relative;z-index:1}
+    .badge{
+      margin-top:10px;display:inline-block;padding:8px 12px;border-radius:999px;font-size:11px;
+      background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:var(--muted);position:relative;z-index:1;
+    }
+
+    .tickerWrap{
+      position:sticky;top:76px;z-index:20;margin-bottom:16px;
+      padding-top:4px;background:linear-gradient(180deg, rgba(9,11,16,.94), rgba(9,11,16,.80));
+      backdrop-filter:blur(12px);
+    }
+    .ticker{
+      overflow:hidden;border-radius:999px;border:1px solid rgba(255,255,255,.12);
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.03)),
+        linear-gradient(135deg, rgba(212,175,55,.10), rgba(212,175,55,.04));
+      box-shadow:var(--shadow);white-space:nowrap;position:relative;
+    }
+    .ticker:before{
+      content:"DÖVİZ";position:absolute;left:10px;top:50%;transform:translateY(-50%);
+      padding:7px 10px;border-radius:999px;background:linear-gradient(135deg, var(--gold2), var(--gold));
+      color:#111;font-size:11px;font-weight:900;z-index:2;
+    }
+    .tickerTrack{
+      display:inline-flex;gap:26px;padding:14px 18px 14px 96px;min-width:max-content;
+      animation:marquee 24s linear infinite;
+    }
+    @keyframes marquee{
+      0%{transform:translateX(0)}
+      100%{transform:translateX(-50%)}
+    }
+    .tickItem{display:inline-flex;align-items:center;gap:8px;color:#f5f0e4;font-weight:700;font-size:14px}
+    .tickName{color:var(--gold3)}
+
+    .footer{
+      margin-top:16px;padding:15px 16px;border-radius:22px;background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);color:var(--muted);font-size:12px;line-height:1.55;text-align:center;
+    }
+
+    @media (max-width:900px){
+      .stats{grid-template-columns:1fr 1fr}
+      .list{grid-template-columns:1fr}
+    }
+    @media (max-width:580px){
+      .heroTitle{font-size:28px}
+      .heroPrice{font-size:36px}
+      .brandText h1{font-size:19px}
+      .tickerWrap{top:74px}
+    }
+  </style>
 </head>
 <body>
+  <div class="page">
+    <div class="switcher">
+      <div class="switcherInner">
+        <button class="modeBtn active" data-mode="panel">Yönetim Paneli</button>
+        <button class="modeBtn" data-mode="customer">Müşteri Ekranı</button>
+      </div>
+    </div>
 
-<div id="adminPanel" class="hidden">
-  <div class="top">
-    <h2>Admin Panel</h2>
-    <button class="btn adminBtn" onclick="switchToCustomer()">Müşteri Görünümü</button>
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">
+          <img id="logoImg" src="logo.png" alt="Asil Kuyumculuk Logo">
+          <div class="logoFallback" id="logoFallback">AK</div>
+        </div>
+        <div class="brandText">
+          <h1>Asil Kuyumculuk</h1>
+          <p id="screenSubtitle">Tek dosya canlı fiyat sistemi</p>
+        </div>
+      </div>
+      <div class="rightActions">
+        <div class="live" id="liveState">Canlı</div>
+        <button class="iconBtn" id="refreshBtn">↻</button>
+      </div>
+    </div>
+
+    <section id="panelScreen" class="screen active">
+      <div class="hero">
+        <div class="heroTop">
+          <div>
+            <div class="heroSub">Yönetim görünümü</div>
+            <div class="heroTitle" id="panelHeroTitle">Gram Altın</div>
+            <div class="heroDesc">Detaylı takip için hazırlanmış premium panel görünümü.</div>
+          </div>
+        </div>
+        <div class="heroPriceRow">
+          <div class="heroPrice" id="panelHeroPrice">—</div>
+          <div class="heroMini">
+            <div id="panelHeroChange">Canlı veri</div>
+            <div id="panelHeroTime">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chips" id="chips">
+        <button class="chip active" data-key="gram">Gram</button>
+        <button class="chip" data-key="ceyrek">Çeyrek</button>
+        <button class="chip" data-key="yarim">Yarım</button>
+        <button class="chip" data-key="tam">Tam</button>
+        <button class="chip" data-key="cumhuriyet">Cumhuriyet</button>
+        <button class="chip" data-key="ata">Ata</button>
+        <button class="chip" data-key="has">Has</button>
+        <button class="chip" data-key="22ayar">22 Ayar</button>
+        <button class="chip" data-key="usdtry">USD/TRY</button>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="statLabel">Çeyrek Altın</div>
+          <div class="statValue" id="ceyrekVal">—</div>
+          <div class="statDelta" id="ceyrekDelta">Canlı veri</div>
+        </div>
+        <div class="stat">
+          <div class="statLabel">22 Ayar Bilezik</div>
+          <div class="statValue" id="ayar22Val">—</div>
+          <div class="statDelta" id="ayar22Delta">Canlı veri</div>
+        </div>
+        <div class="stat">
+          <div class="statLabel">Has Altın</div>
+          <div class="statValue" id="hasVal">—</div>
+          <div class="statDelta" id="hasDelta">Canlı veri</div>
+        </div>
+        <div class="stat">
+          <div class="statLabel">USD / TRY</div>
+          <div class="statValue" id="usdVal">—</div>
+          <div class="statDelta" id="usdDelta">Piyasa</div>
+        </div>
+      </div>
+
+      <div class="sectionRow">
+        <h3>Detaylı Fiyat Listesi</h3>
+        <div class="tag" id="endpointTag">altin-proxy.ufuk87900.workers.dev</div>
+      </div>
+
+      <div class="list" id="panelList"></div>
+    </section>
+
+    <section id="customerScreen" class="screen">
+      <div class="tickerWrap">
+        <div class="ticker">
+          <div class="tickerTrack" id="tickerTrack"></div>
+        </div>
+      </div>
+
+      <div class="hero">
+        <div class="heroTop">
+          <div>
+            <div class="heroSub">Müşteri ekranı</div>
+            <div class="heroTitle" id="customerHeroName">Gram Altın</div>
+            <div class="heroDesc">Sadece altın fiyatları görünür, döviz üst bantta akar.</div>
+          </div>
+        </div>
+        <div class="heroPriceRow">
+          <div class="heroPrice" id="customerHeroPrice">—</div>
+          <div class="heroMini">
+            <div id="customerHeroChange">Canlı veri</div>
+            <div id="customerHeroTime">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sectionRow">
+        <h3>Altın Fiyatları</h3>
+        <div class="tag">Müşteri görünümü</div>
+      </div>
+
+      <div class="list" id="customerList"></div>
+    </section>
+
+    <div class="footer" id="statusBar">Sistem hazırlanıyor...</div>
   </div>
-  <div id="adminContent"></div>
-</div>
 
-<div id="customerPanel">
-  <div class="ticker"><div id="ticker"></div></div>
-  <div class="top">
-    <h2>Asil Kuyumculuk</h2>
-  </div>
-  <div id="customerContent"></div>
-</div>
+  <script>
+    const ENDPOINT = "https://altin-proxy.ufuk87900.workers.dev";
+    const state = {
+      items: [],
+      updatedText: "—",
+      activeKey: "gram",
+      mode: "panel"
+    };
 
-<script>
-const ENDPOINT = "https://altin-proxy.ufuk87900.workers.dev";
+    const $ = id => document.getElementById(id);
 
-function isAdmin(){
-  return window.location.search.includes("admin");
-}
+    const logoImg = $("logoImg");
+    const logoFallback = $("logoFallback");
+    logoImg.onerror = () => {
+      logoImg.style.display = "none";
+      logoFallback.style.display = "block";
+    };
 
-function switchToCustomer(){
-  document.getElementById("adminPanel").classList.add("hidden");
-  document.getElementById("customerPanel").classList.remove("hidden");
-}
+    function normalizeKey(text){
+      return String(text || "")
+        .toLowerCase()
+        .replace(/ı/g,"i").replace(/ğ/g,"g").replace(/ü/g,"u")
+        .replace(/ş/g,"s").replace(/ö/g,"o").replace(/ç/g,"c")
+        .replace(/[^a-z0-9]/g,"");
+    }
 
-function switchToAdmin(){
-  document.getElementById("customerPanel").classList.add("hidden");
-  document.getElementById("adminPanel").classList.remove("hidden");
-}
+    function formatTry(value){
+      if (value == null || value === "") return "—";
+      const num = Number(String(value).replace(",", "."));
+      if (!isNaN(num)){
+        return num.toLocaleString("tr-TR", {minimumFractionDigits:2, maximumFractionDigits:2}) + " ₺";
+      }
+      return String(value).includes("₺") ? String(value) : String(value) + " ₺";
+    }
 
-function format(v){
-  if(!v) return "-";
-  let n = Number(String(v).replace(",","."));
-  if(!isNaN(n)) return n.toLocaleString("tr-TR")+" ₺";
-  return v;
-}
+    function formatRaw(value){
+      if (value == null || value === "") return "—";
+      const num = Number(String(value).replace(",", "."));
+      if (!isNaN(num)){
+        return num.toLocaleString("tr-TR", {minimumFractionDigits:2, maximumFractionDigits:2});
+      }
+      return String(value);
+    }
 
-function normalize(k){
-  return k.toLowerCase().replace(/[^a-z0-9]/g,"");
-}
+    function extractValue(obj){
+      if (typeof obj === "number" || typeof obj === "string") return obj;
+      if (!obj || typeof obj !== "object") return null;
+      return obj.satis ?? obj["satış"] ?? obj.sell ?? obj.price ?? obj.value ?? obj.last ?? obj.alis ?? obj["alış"] ?? null;
+    }
 
-function isCurrency(k){
-  return ["usd","usdtry","eur","eurtry","gbp","sterlin"].includes(k);
-}
+    function extractChange(obj){
+      if (!obj || typeof obj !== "object") return null;
+      return obj.change ?? obj.degisim ?? obj["değişim"] ?? obj.percent ?? obj.yuzde ?? null;
+    }
 
-async function load(){
-  try{
-    let res = await fetch(ENDPOINT);
-    let data = await res.json();
+    function timestamp(payload){
+      return payload?.updatedAt || payload?.updateDate || payload?.timestamp || payload?.date || payload?.time || new Date().toLocaleString("tr-TR");
+    }
 
-    let items = Object.entries(data).map(([k,v])=>({
-      key:normalize(k),
-      name:k,
-      value:(typeof v==="object")?(v.satis||v.price||v):v
-    }));
+    function toEntries(payload){
+      if (!payload) return [];
+      if (Array.isArray(payload)){
+        return payload.map((item, i) => ({
+          key: normalizeKey(item.name || item.title || item.label || item.code || ("item" + i)),
+          label: item.name || item.title || item.label || item.code || ("Veri " + (i + 1)),
+          value: extractValue(item),
+          raw: item
+        }));
+      }
+      if (payload.data && typeof payload.data === "object") return toEntries(payload.data);
+      if (payload.result && typeof payload.result === "object") return toEntries(payload.result);
+      if (payload.prices && typeof payload.prices === "object") return toEntries(payload.prices);
 
-    let gold = items.filter(x=>!isCurrency(x.key));
-    let currency = items.filter(x=>isCurrency(x.key));
+      const out = [];
+      for (const [k,v] of Object.entries(payload)){
+        if (["updatedAt","updateDate","timestamp","date","time","success","status"].includes(k)) continue;
+        out.push({
+          key: normalizeKey(k),
+          label: k,
+          value: extractValue(v),
+          raw: v
+        });
+      }
+      return out;
+    }
 
-    // CUSTOMER
-    document.getElementById("customerContent").innerHTML =
-      gold.map(x=>`<div class="card"><b>${x.name}</b><br>${format(x.value)}</div>`).join("");
+    function displayName(key, label){
+      const names = {
+        gram:"Gram Altın", gramaltin:"Gram Altın",
+        ceyrek:"Çeyrek Altın", ceyrekaltin:"Çeyrek Altın",
+        yarim:"Yarım Altın", yarimaltin:"Yarım Altın",
+        tam:"Tam Altın", tamaltin:"Tam Altın",
+        cumhuriyet:"Cumhuriyet Altını", cumhuriyetaltini:"Cumhuriyet Altını",
+        ata:"Ata Altın", ataaltin:"Ata Altın",
+        resat:"Reşat Altın", resataltin:"Reşat Altın",
+        gremse:"Gremse Altın",
+        has:"Has Altın", hasaltin:"Has Altın",
+        "22ayar":"22 Ayar Bilezik", "22ayarbilezik":"22 Ayar Bilezik",
+        usdtry:"USD/TRY", usd:"USD/TRY", dolar:"USD/TRY",
+        eurtry:"EUR/TRY", eur:"EUR/TRY", euro:"EUR/TRY",
+        gbptry:"GBP/TRY", sterlin:"GBP/TRY"
+      };
+      return names[key] || label;
+    }
 
-    document.getElementById("ticker").innerHTML =
-      currency.map(x=>`<span>${x.name}: ${format(x.value)}</span>`).join("");
+    function aliasKeys(key){
+      const map = {
+        gram:["gram","gramaltin"],
+        ceyrek:["ceyrek","ceyrekaltin"],
+        yarim:["yarim","yarimaltin"],
+        tam:["tam","tamaltin"],
+        cumhuriyet:["cumhuriyet","cumhuriyetaltini"],
+        ata:["ata","ataaltin"],
+        has:["has","hasaltin"],
+        "22ayar":["22ayar","22ayarbilezik"],
+        usdtry:["usdtry","usd","dolar"]
+      };
+      return map[key] || [key];
+    }
 
-    // ADMIN
-    document.getElementById("adminContent").innerHTML =
-      items.map(x=>`<div class="card"><b>${x.name}</b><br>${format(x.value)}</div>`).join("");
+    function findItem(key){
+      const keys = aliasKeys(key);
+      return state.items.find(x => keys.includes(x.key)) || null;
+    }
 
-  }catch(e){
-    console.log(e);
-  }
-}
+    function changeView(raw){
+      const ch = extractChange(raw);
+      if (ch == null) return {text:"Canlı veri", cls:""};
+      const num = Number(String(ch).replace(",", "."));
+      if (isNaN(num)) return {text:String(ch), cls:""};
+      return {text:(num > 0 ? "+" : "") + String(ch) + "%", cls:num > 0 ? "up" : num < 0 ? "down" : ""};
+    }
 
-if(isAdmin()){
-  switchToAdmin();
-}else{
-  switchToCustomer();
-}
+    function isCurrency(item){
+      return ["usdtry","usd","dolar","eurtry","eur","euro","gbptry","sterlin"].includes(item.key);
+    }
 
-load();
-setInterval(load,60000);
-</script>
+    function iconLetters(text){
+      return String(text).split(" ").map(x => x[0]).join("").slice(0,2).toUpperCase();
+    }
 
+    function setMode(mode){
+      state.mode = mode;
+      document.querySelectorAll(".modeBtn").forEach(btn => btn.classList.toggle("active", btn.dataset.mode === mode));
+      $("panelScreen").classList.toggle("active", mode === "panel");
+      $("customerScreen").classList.toggle("active", mode === "customer");
+      $("screenSubtitle").textContent = mode === "panel" ? "Tek dosya canlı fiyat sistemi" : "Tek dosya müşteri ekranı";
+    }
+
+    function setStatDelta(id, view){
+      const el = $(id);
+      el.textContent = view.text;
+      el.className = "statDelta";
+      if (view.cls) el.classList.add(view.cls);
+    }
+
+    function renderPanel(){
+      const hero = findItem(state.activeKey) || state.items[0];
+      if (hero){
+        const hv = changeView(hero.raw);
+        $("panelHeroTitle").textContent = hero.display;
+        $("panelHeroPrice").textContent = formatTry(hero.value);
+        $("panelHeroChange").textContent = hv.text;
+        $("panelHeroChange").className = hv.cls;
+        $("panelHeroTime").textContent = state.updatedText;
+      }
+
+      const ceyrek = findItem("ceyrek");
+      const ayar22 = findItem("22ayar");
+      const has = findItem("has");
+      const usd = findItem("usdtry");
+      $("ceyrekVal").textContent = formatTry(ceyrek?.value);
+      $("ayar22Val").textContent = formatTry(ayar22?.value);
+      $("hasVal").textContent = formatTry(has?.value);
+      $("usdVal").textContent = formatTry(usd?.value);
+      setStatDelta("ceyrekDelta", changeView(ceyrek?.raw));
+      setStatDelta("ayar22Delta", changeView(ayar22?.raw));
+      setStatDelta("hasDelta", changeView(has?.raw));
+      setStatDelta("usdDelta", changeView(usd?.raw));
+
+      $("panelList").innerHTML = "";
+      state.items.forEach(item => {
+        const ch = changeView(item.raw);
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="cardTop">
+            <div class="left">
+              <div class="coin">${iconLetters(item.display)}</div>
+              <div>
+                <div class="name">${item.display}</div>
+                <div class="meta">Son güncelleme: ${state.updatedText}</div>
+              </div>
+            </div>
+            <div class="price">${formatTry(item.value)}</div>
+          </div>
+          <div class="badge ${ch.cls}">${ch.text}</div>
+        `;
+        $("panelList").appendChild(card);
+      });
+    }
+
+    function renderCustomer(){
+      const currencies = state.items.filter(isCurrency);
+      const golds = state.items.filter(x => !isCurrency(x));
+
+      const tickerSource = currencies.length ? currencies : [
+        {display:"USD/TRY", value:"—", raw:{}},
+        {display:"EUR/TRY", value:"—", raw:{}},
+        {display:"GBP/TRY", value:"—", raw:{}}
+      ];
+      const tickerHtml = tickerSource.map(item => {
+        const ch = changeView(item.raw);
+        return `<span class="tickItem"><span class="tickName">${item.display}</span><span>${formatRaw(item.value)}</span><span class="${ch.cls}">${ch.text}</span></span>`;
+      }).join("");
+      $("tickerTrack").innerHTML = tickerHtml + tickerHtml;
+
+      const hero = golds[0];
+      const hv = changeView(hero?.raw);
+      $("customerHeroName").textContent = hero?.display || "Altın Fiyatları";
+      $("customerHeroPrice").textContent = formatTry(hero?.value);
+      $("customerHeroChange").textContent = hv.text;
+      $("customerHeroChange").className = hv.cls;
+      $("customerHeroTime").textContent = state.updatedText;
+
+      $("customerList").innerHTML = "";
+      golds.forEach(item => {
+        const ch = changeView(item.raw);
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="cardTop">
+            <div class="left">
+              <div class="coin">${iconLetters(item.display)}</div>
+              <div>
+                <div class="name">${item.display}</div>
+                <div class="meta">Son güncelleme: ${state.updatedText}</div>
+              </div>
+            </div>
+            <div class="price">${formatTry(item.value)}</div>
+          </div>
+          <div class="badge ${ch.cls}">${ch.text}</div>
+        `;
+        $("customerList").appendChild(card);
+      });
+    }
+
+    function bindUI(){
+      document.querySelectorAll(".modeBtn").forEach(btn => {
+        btn.addEventListener("click", () => setMode(btn.dataset.mode));
+      });
+      document.querySelectorAll(".chip").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".chip").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          state.activeKey = btn.dataset.key;
+          renderPanel();
+        });
+      });
+      $("refreshBtn").addEventListener("click", loadData);
+    }
+
+    async function loadData(){
+      $("statusBar").textContent = "Sunucuya bağlanılıyor...";
+      try{
+        const res = await fetch(ENDPOINT, {cache:"no-store"});
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const payload = await res.json();
+
+        state.updatedText = timestamp(payload);
+        state.items = toEntries(payload)
+          .map(x => ({...x, display: displayName(x.key, x.label)}))
+          .filter(x => x.value !== null && x.value !== undefined && x.value !== "")
+          .slice(0, 14);
+
+        $("liveState").textContent = "Canlı";
+        $("statusBar").textContent = "Tek dosya sistem güncellendi. Üstten ekran değiştirerek panel ve müşteri görünümünü kullanabilirsin.";
+
+        renderPanel();
+        renderCustomer();
+      }catch(err){
+        console.error(err);
+        $("liveState").textContent = "Hata";
+        $("statusBar").textContent = "Veri alınamadı. Endpoint veya bağlantı ayarını kontrol et.";
+      }
+    }
+
+    bindUI();
+    setMode("panel");
+    loadData();
+    setInterval(loadData, 60000);
+  </script>
 </body>
 </html>
