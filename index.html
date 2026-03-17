@@ -3,44 +3,116 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Asil Kuyumcum PRO</title>
+<title>ASİL KUYUMCUM PRO</title>
 <style>
-body{margin:0;background:#0b0b0b;color:#fff;font-family:Arial}
-.header{text-align:center;padding:20px;color:#d4af37;font-size:24px}
+body{margin:0;background:#000;color:#fff;font-family:Arial}
+.header{text-align:center;padding:18px;color:#d4af37;font-size:26px}
 .row{display:flex;justify-content:space-between;padding:14px;border-bottom:1px solid #222;font-size:18px}
-.tv body{font-size:28px}
-button{position:fixed;top:10px;right:10px}
+.panel{padding:10px}
+button{position:fixed;top:10px;right:10px;z-index:10}
+.adminBtn{right:60px}
+.tv .row{font-size:30px;padding:20px}
+.tv .header{font-size:42px}
+.hidden{display:none}
+.sec{margin-top:10px;padding:10px;background:#111}
+.sec h3{margin:0 0 8px;color:#d4af37}
+.flag{margin-right:6px}
 </style>
 </head>
 <body>
 
 <div class="header">ASİL KUYUMCUM</div>
-<div id="list"></div>
+
+<div id="customer"></div>
 
 <button onclick="toggleTV()">📺</button>
+<button class="adminBtn" onclick="toggleAdmin()">⚙️</button>
+
+<div id="admin" class="hidden panel">
+
+<div class="sec">
+<h3>Döviz</h3>
+<div id="doviz"></div>
+</div>
+
+<div class="sec">
+<h3>Hurda Altın</h3>
+<div id="hurda"></div>
+</div>
+
+</div>
 
 <script>
 const worker="https://altin-proxy.ufuk87900.workers.dev";
 
+const flags={
+ usd:"🇺🇸", eur:"🇪🇺", gbp:"🇬🇧", sar:"🇸🇦"
+};
+
+function render(data){
+ const list=document.getElementById("customer");
+ list.innerHTML="";
+
+ const items=[
+  {n:"24 Ayar",v:data.hasSatis},
+  {n:"22 Ayar",v:data.hasSatis*0.92},
+  {n:"Gram Altın",v:data.hasSatis},
+  {n:"Çeyrek",v:data.hasSatis*1.02},
+  {n:"Yarım",v:data.hasSatis*2.04},
+  {n:"Tam",v:data.hasSatis*4.08}
+ ];
+
+ items.forEach(i=>{
+  const r=document.createElement("div");
+  r.className="row";
+  r.innerHTML=`<b>${i.n}</b><span>${Math.round(i.v)}</span>`;
+  list.appendChild(r);
+ });
+
+ // döviz
+ const dEl=document.getElementById("doviz");
+ dEl.innerHTML="";
+ ["usd","eur","gbp","sar"].forEach(k=>{
+   if(data[k+"Satis"]){
+     const r=document.createElement("div");
+     r.className="row";
+     r.innerHTML=`<b><span class="flag">${flags[k]}</span>${k.toUpperCase()}</b>
+     <span>${parseFloat(data[k+"Satis"]).toFixed(2)}</span>`;
+     dEl.appendChild(r);
+   }
+ });
+
+ // hurda
+ const hEl=document.getElementById("hurda");
+ hEl.innerHTML="";
+ [
+  {n:"22 Ayar Hurda",o:22/24},
+  {n:"14 Ayar Hurda",o:14/24}
+ ].forEach(h=>{
+   const r=document.createElement("div");
+   r.className="row";
+   r.innerHTML=`<b>${h.n}</b><span>${Math.round(data.hasSatis*h.o)}</span>`;
+   hEl.appendChild(r);
+ });
+
+}
+
 function load(){
  fetch(worker)
  .then(r=>r.json())
- .then(d=>{
-   const list=document.getElementById("list");
-   list.innerHTML=`
-   <div class="row"><b>24 Ayar</b><span>${Math.round(d.hasSatis)}</span></div>
-   <div class="row"><b>22 Ayar</b><span>${Math.round(d.hasSatis*0.92)}</span></div>
-   <div class="row"><b>Gram Altın</b><span>${Math.round(d.hasSatis)}</span></div>
-   <div class="row"><b>Çeyrek</b><span>${Math.round(d.hasSatis*1.02)}</span></div>
-   <div class="row"><b>Yarım</b><span>${Math.round(d.hasSatis*2.04)}</span></div>
-   `;
- });
+ .then(d=>render(d))
+ .catch(()=>console.log("veri yok"));
 }
+
 setInterval(load,3000);
 load();
 
 function toggleTV(){
  document.body.classList.toggle("tv");
+}
+
+function toggleAdmin(){
+ document.getElementById("admin").classList.toggle("hidden");
 }
 </script>
 
