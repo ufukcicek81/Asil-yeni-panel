@@ -619,8 +619,8 @@ function buildAdminRows(){
 
     var hidden = (settings.hiddenItems||[]).indexOf(item.id) !== -1;
     urunHtml += '<div class="urun-item"><span class="urun-name">'+item.label+(hidden?' <small style="color:#777">(gizli)</small>':'')+'</span>'
-      + '<button class="urun-btn hide" onclick="toggleUrun(\\''+item.id+'\\')">'+(hidden?'Göster':'Gizle')+'</button>'
-      + ((item.id.indexOf('custom_')===0) ? '<button class="urun-btn del" onclick="deleteUrun(\\''+item.id+'\\')">Sil</button>' : '')
+      + '<button class="urun-btn hide" onclick="toggleUrun(\''+item.id+'\')">'+(hidden?'Göster':'Gizle')+'</button>'
+      + ((item.id.indexOf('custom_')===0) ? '<button class="urun-btn del" onclick="deleteUrun(\''+item.id+'\')">Sil</button>' : '')
       + '</div>';
   });
 
