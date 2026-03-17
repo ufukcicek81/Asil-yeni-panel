@@ -1,45 +1,790 @@
-function updateDovizBant() {
-  var bantItems = [];
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asil Kuyumcum</title>
+<link rel="manifest" id="manifestLink" href="manifest.json">
+<meta name="theme-color" content="#b8960c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Asil Kuyumcum">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#101010; --bg2:#161616; --bg3:#1d1d1d; --line:#303030;
+  --gold:#d4af37; --gold2:#f0d060; --txt:#f0e6c8; --muted:#b8a773;
+  --green:#4ad17b; --red:#ff7676; --blue:#7ab0e0;
+}
+body{font-family:Arial,Helvetica,sans-serif;background:#0d0d0d;color:var(--txt);min-height:100vh}
+.header{
+  position:relative;display:flex;align-items:center;justify-content:center;gap:12px;
+  padding:14px 16px;background:#111;border-bottom:2px solid #8f7420
+}
+.logo{width:58px;height:58px;border-radius:50%;object-fit:cover;background:#000}
+.brand{min-width:0;text-align:center}
+.brand-title{font-size:28px;font-weight:700;color:var(--gold2);line-height:1.1}
+.brand-sub{font-size:14px;color:var(--muted);margin-top:4px}
+.brand-has{font-size:12px;margin-top:4px}
+.brand-has.ok{color:var(--green)} .brand-has.err{color:var(--red)}
+.top-left,.top-right{position:absolute;top:12px;display:flex;gap:8px}
+.top-left{left:12px}.top-right{right:12px}
+.top-btn{
+  border:1px solid #555;background:#252525;color:#e7ddb0;border-radius:20px;
+  padding:8px 12px;font-size:12px;cursor:pointer
+}
+.top-btn.active{background:#4a2d00;border-color:#9a6a00;color:#ffd67a}
+.top-btn.admin-btn{display:none}
+.admin-enabled .admin-btn,.admin-enabled .mod-btn,.admin-enabled .tv-btn{display:inline-flex;align-items:center}
 
-  if (liveDoviz && liveDoviz.usdAlis) {
-    var dovizListesi = [
-      { sym:'🇺🇸 USD', id:'usd' },
-      { sym:'🇪🇺 EUR', id:'eur' },
-      { sym:'🇬🇧 GBP', id:'gbp' },
-      { sym:'🇸🇦 SAR', id:'sar' },
-      { sym:'🇨🇭 CHF', id:'chf' }
-    ];
+.doviz-bant{overflow:hidden;white-space:nowrap;background:#131313;border-bottom:1px solid #312915}
+.doviz-bant-inner{display:inline-block;padding:8px 0;animation:kay 28s linear infinite}
+.doviz-item{display:inline-block;margin:0 18px;font-size:12px;font-weight:700;color:#d8c48a}
+.doviz-item .a{color:var(--green)} .doviz-item .s{color:var(--red)}
+@keyframes kay{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
-    dovizListesi.forEach(function(d) {
-      var duzA = parseFloat((settings.dovizDuz && settings.dovizDuz[d.id + 'A']) || 0);
-      var duzS = parseFloat((settings.dovizDuz && settings.dovizDuz[d.id + 'S']) || 0);
+.main-wrap{display:block}
+.left-shell,.right-shell{background:#131313}
+.table-header,.price-row{display:grid;grid-template-columns:1.45fr 1fr 1fr 1.05fr;gap:10px;align-items:center}
+.table-header{
+  padding:11px 14px;background:#1b1b1b;border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  color:var(--gold);font-size:13px;font-weight:700
+}
+.table-header span:nth-child(n+2),.price-row span:nth-child(n+2){text-align:right}
+.price-row{
+  padding:13px 14px;border-bottom:1px solid #242424;background:#151515
+}
+.price-row:nth-child(even){background:#191919}
+.birim{font-size:17px;color:var(--txt)}
+.alis,.satis,.kk{text-align:right;font-size:17px;font-weight:700}
+.kk{font-size:15px;color:var(--blue)}
+.price-up{color:var(--green)!important}.price-down{color:var(--red)!important}.price-same{color:#fff!important}
 
-      var alis  = liveDoviz[d.id + 'Alis']  ? (liveDoviz[d.id + 'Alis'] + duzA).toFixed(2) : null;
-      var satis = liveDoviz[d.id + 'Satis'] ? (liveDoviz[d.id + 'Satis'] + duzS).toFixed(2) : null;
+.side-grid{display:flex;flex-direction:column;gap:10px;padding-bottom:8px}
+.side-box{background:#141414}
+.side-title{padding:12px 16px;font-size:13px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;background:#111}
+.side-title.blue{color:var(--blue);border-bottom:2px solid #1a3a5a}
+.side-title.gold{color:var(--gold);border-bottom:2px solid #3a3000}
+.side-head,.side-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;align-items:center}
+.side-head{
+  padding:7px 16px;background:#191919;border-bottom:1px solid #262626;font-size:12px;color:#888
+}
+.side-row{
+  padding:11px 16px;border-bottom:1px solid #242424;background:#151515
+}
+.side-row:nth-child(even){background:#191919}
+.side-head span:nth-child(2),.side-head span:nth-child(3),.side-row span:nth-child(2),.side-row span:nth-child(3){text-align:right}
+.side-row .name{font-size:15px;font-weight:700;color:var(--txt)}
+.side-row .a{color:var(--green);font-weight:700}
+.side-row .s{color:var(--red);font-weight:700}
 
-      if (alis && satis) {
-        bantItems.push({
-          sym: d.sym,
-          alis: alis,
-          satis: satis
-        });
+.update-bar{padding:12px 14px;text-align:center;background:#111;border-top:1px solid #2c2c2c}
+.upd-pill{display:inline-block;padding:7px 14px;border-radius:999px;background:#262626;border:1px solid #373737;color:#d8cfb1;font-size:12px}
+.upd-src{display:block;margin-top:5px;font-size:12px}
+.ok{color:var(--green)} .err{color:var(--red)}
+
+.bottom-nav{display:flex;background:#111;border-top:1px solid #282828}
+.bottom-nav button{flex:1;background:none;border:none;color:#909090;padding:9px 0 11px;font-size:12px}
+.bottom-nav .active{color:var(--gold)}
+
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:30;align-items:flex-end;justify-content:center}
+.overlay.open{display:flex}
+.panel{
+  width:min(1280px,100%);max-height:92vh;overflow:auto;background:#151515;border-top:2px solid var(--gold);
+  border-radius:18px 18px 0 0;padding-bottom:20px
+}
+.panel-head{
+  position:sticky;top:0;z-index:4;background:#151515;border-bottom:1px solid #2d2d2d;
+  padding:14px 18px;display:flex;justify-content:space-between;align-items:center
+}
+.panel-head h2{font-size:18px;color:var(--gold)}
+.close-btn{width:30px;height:30px;border-radius:50%;border:none;background:#333;color:#fff;cursor:pointer}
+
+.panel-grid{display:grid;grid-template-columns:1fr;gap:14px;padding:14px 16px}
+.panel-col{background:#121212;border:1px solid #222;border-radius:14px;overflow:hidden}
+.sec-title{padding:12px 14px 6px;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:700;color:var(--gold)}
+.field,.admin-row{
+  display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;
+  padding:10px 14px;border-bottom:1px solid #232323
+}
+.field label,.row-label{font-size:14px;color:#e7d8ae;min-width:90px}
+.admin-inp{
+  background:#222;border:1px solid #444;color:#fff;border-radius:8px;padding:8px;font-size:14px
+}
+.pair{display:flex;align-items:center;gap:4px}
+.pair small,.hint{font-size:11px;color:#999}
+.prev-a,.prev-s{font-size:11px;min-width:54px;text-align:right}
+.prev-a{color:#9fd0a0}.prev-s{color:#ff9b9b}
+.hint-box{
+  margin:4px 14px 10px;background:#201d12;border:1px solid #4b4020;border-radius:8px;
+  padding:8px 10px;font-size:12px;color:#d4c08a;line-height:1.55
+}
+.has-row{
+  display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#252510;border-bottom:1px solid #3a3a20
+}
+.has-row span:first-child{font-size:13px;color:#d3b24d}
+.has-row span:last-child{font-size:15px;font-weight:700;color:#f0d060}
+
+.urun-wrap{padding:10px 14px}
+.urun-item{
+  display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #222
+}
+.urun-item:last-child{border-bottom:none}
+.urun-name{flex:1;font-size:14px;color:#f1e6c6}
+.urun-btn,.urun-add-btn{
+  border:none;border-radius:8px;padding:6px 9px;cursor:pointer;font-size:12px;font-weight:700
+}
+.urun-btn.hide{background:#333;color:#fff}
+.urun-btn.del{background:#5b1f1f;color:#fff}
+.urun-add-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.urun-add-btn{background:#1f6f38;color:#fff}
+.share-box{
+  margin:0 14px 14px;background:#132013;border:1px solid #284228;border-radius:10px;padding:12px
+}
+.share-link{
+  display:block;background:#1a2230;border-radius:6px;padding:6px 8px;font-size:11px;color:#7ab0e0;
+  word-break:break-all;margin:6px 0
+}
+.btn-row{display:flex;gap:8px;margin-top:8px}
+.copy-btn,.wa-btn{
+  flex:1;border:none;border-radius:8px;padding:10px;color:#fff;font-weight:700;cursor:pointer
+}
+.copy-btn{background:#1a4a8a}.wa-btn{background:#1a8a40}
+.save-btn,.reset-btn{
+  display:block;width:calc(100% - 28px);margin:14px auto 0;padding:12px;border-radius:12px;
+  font-size:15px;font-weight:700;cursor:pointer
+}
+.save-btn{background:#b8960c;color:#fff;border:none}
+.reset-btn{background:#222;border:1px solid #444;color:#ccc}
+
+.toast{
+  position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:#b8960c;color:#fff;
+  padding:8px 14px;border-radius:16px;opacity:0;transition:.2s;z-index:60
+}
+.toast.show{opacity:1}
+
+.tv-mode body{overflow:hidden}
+body.tv-active .header{padding:18px 18px}
+body.tv-active .brand-title{font-size:38px}
+body.tv-active .brand-sub{font-size:20px}
+body.tv-active .brand-has{font-size:18px}
+body.tv-active .doviz-item{font-size:20px;margin:0 28px}
+body.tv-active .table-header{font-size:18px;padding:16px 20px}
+body.tv-active .price-row{padding:18px 20px}
+body.tv-active .birim{font-size:28px}
+body.tv-active .alis,body.tv-active .satis,body.tv-active .kk{font-size:28px}
+body.tv-active .kk{font-size:24px}
+body.tv-active .side-title{font-size:18px;padding:16px 20px}
+body.tv-active .side-head{font-size:16px;padding:10px 20px}
+body.tv-active .side-row{padding:14px 20px}
+body.tv-active .side-row .name,body.tv-active .side-row .a,body.tv-active .side-row .s{font-size:22px}
+body.tv-active .update-bar{display:none}
+body.tv-active .bottom-nav{display:none}
+body.tv-active .top-btn{font-size:15px;padding:10px 14px}
+
+@media (min-width:900px){
+  .main-wrap{display:grid;grid-template-columns:1fr 1fr;min-height:calc(100vh - 123px)}
+  .left-shell{border-right:1px solid #252525}
+  .right-shell{display:block}
+  .bottom-nav{display:none}
+  .admin-enabled .admin-btn,.admin-enabled .mod-btn,.admin-enabled .tv-btn{display:inline-flex}
+}
+@media (max-width:899px){
+  .right-shell{display:none}
+}
+</style>
+</head>
+<body>
+<div class="header" id="header">
+  <div class="top-left">
+    <button class="top-btn mod-btn" id="modBtn" onclick="toggleMode()">⚡ Normal</button>
+    <button class="top-btn tv-btn" id="tvBtn" onclick="toggleTvMode()">📺 TV</button>
+  </div>
+  <div class="top-right">
+    <button class="top-btn admin-btn" id="adminBtn">⋯</button>
+  </div>
+  <img src="icon-192.png" class="logo" alt="logo">
+  <div class="brand">
+    <div class="brand-text">
+      <div class="brand-title" id="shopName">Asil Kuyumcum</div>
+      <div class="brand-sub" id="shopPhone">0380 790 1 404</div>
+      <div class="brand-has err" id="hasInfo">Bağlantı bekleniyor...</div>
+    </div>
+  </div>
+</div>
+
+<div class="doviz-bant"><div class="doviz-bant-inner" id="ticker">⏳ Döviz yükleniyor...</div></div>
+
+<div class="main-wrap">
+  <div class="left-shell">
+    <div class="table-header"><span>Birim</span><span>Alış</span><span>Satış</span><span>K. Kartı</span></div>
+    <div id="rows"></div>
+    <div class="update-bar">
+      <span class="upd-pill" id="lastUpdate">Yükleniyor...</span>
+      <span class="upd-src err" id="connState">⚠ Bağlantı yok</span>
+    </div>
+  </div>
+
+  <div class="right-shell">
+    <div class="side-grid">
+      <div class="side-box">
+        <div class="side-title blue">💱 Döviz Kurları</div>
+        <div class="side-head"><span>Döviz</span><span>Alış</span><span>Satış</span></div>
+        <div id="fxRowsDesktop"></div>
+      </div>
+      <div class="side-box">
+        <div class="side-title gold">🔩 Hurda Altın</div>
+        <div class="side-head"><span>Tür</span><span>Alış</span><span>Satış</span></div>
+        <div id="scrapRowsDesktop"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-nav" id="bottomNav">
+  <button class="active">📊 Pano</button>
+  <button id="navAdmin">⚙️ Yönetici</button>
+</div>
+
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeAdmin()">
+  <div class="panel">
+    <div class="panel-head">
+      <h2>⚙️ Yönetici Paneli</h2>
+      <button class="close-btn" onclick="closeAdmin()">✕</button>
+    </div>
+
+    <div class="panel-grid">
+      <div class="panel-col">
+        <div class="sec-title">Dükkan Bilgileri</div>
+        <div class="field"><label>Dükkan Adı</label><input class="admin-inp" id="aName" style="width:180px"></div>
+        <div class="field"><label>Telefon</label><input class="admin-inp" id="aPhone" style="width:180px"></div>
+        <div class="field"><label>Has Alış Farkı</label><div class="pair"><input class="admin-inp" id="hasAdjA" type="number" step="1" style="width:90px"><small>₺</small></div></div>
+        <div class="field"><label>Has Satış Farkı</label><div class="pair"><input class="admin-inp" id="hasAdjS" type="number" step="1" style="width:90px"><small>₺</small></div></div>
+        <div class="field"><label>Kredi Kartı %</label><div class="pair"><input class="admin-inp" id="kkRate" type="number" step="0.1" style="width:90px"><small>%</small></div></div>
+        <div class="has-row"><span>Has Alış</span><span id="adminHasA">—</span></div>
+        <div class="has-row"><span>Has Satış</span><span id="adminHasS">—</span></div>
+
+        <div class="sec-title">Ürün Listesi Yönetimi</div>
+        <div class="urun-wrap">
+          <div id="urunList"></div>
+          <div class="urun-add-row">
+            <input class="admin-inp" id="newLabel" placeholder="Ürün adı" style="width:120px">
+            <input class="admin-inp" id="newAlisX" type="number" step="0.0001" placeholder="Alış×" style="width:78px" value="1.0000">
+            <input class="admin-inp" id="newSatisX" type="number" step="0.0001" placeholder="Satış×" style="width:78px" value="1.0030">
+            <button class="urun-add-btn" onclick="addUrun()">+ Ekle</button>
+          </div>
+        </div>
+
+        <div class="sec-title">Müşteri Linki</div>
+        <div class="share-box">
+          <div style="font-size:13px;color:#5dba6a;font-weight:700">👥 Müşterilere bunu gönder</div>
+          <span class="share-link" id="customerLink">Yükleniyor...</span>
+          <div class="btn-row">
+            <button class="copy-btn" onclick="copyLink()">📋 Kopyala</button>
+            <button class="wa-btn" onclick="shareWA()">WhatsApp</button>
+          </div>
+        </div>
+
+        <div class="sec-title">Yönetici Şifresi</div>
+        <div class="field"><label>Yeni Şifre</label><input class="admin-inp" id="newPass" type="password" style="width:180px"></div>
+        <div class="field"><label>Şifre Tekrar</label><input class="admin-inp" id="newPass2" type="password" style="width:180px"></div>
+      </div>
+
+      <div class="panel-col">
+        <div class="sec-title">Altın Ürünleri Çarpanları</div>
+        <div class="hint-box"><b>Alış</b> = Has Alış × çarpan<br><b>Satış</b> = Has Satış × çarpan</div>
+        <div id="adminRows"></div>
+      </div>
+
+      <div class="panel-col">
+        <div class="sec-title" style="color:#f0a040">⚡ Hareketli Mod Çarpanları</div>
+        <div class="hint-box" style="background:#1b1405;border-color:#533400;color:#d7b06a">⚡ butonunda bu çarpanlar kullanılır.</div>
+        <div id="adminRowsFast"></div>
+      </div>
+
+      <div class="panel-col">
+        <div class="sec-title" style="color:#7ab0e0">💱 Döviz Düzeltme</div>
+        <div id="adminFxRows"></div>
+        <div class="sec-title" style="color:#d4af37">🔩 Hurda Çarpanı</div>
+        <div id="adminScrapRows"></div>
+      </div>
+    </div>
+
+    <button class="save-btn" onclick="saveAdmin()">💾 Kaydet</button>
+    <button class="reset-btn" onclick="resetAdmin()">↺ Varsayılana Döndür</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+if (location.search.indexOf('admin') !== -1) {
+  var mf = document.getElementById('manifestLink');
+  if (mf) mf.href = 'manifest-admin.json';
+}
+
+var WORKER_URL = 'https://altin-proxy.ufuk87900.workers.dev';
+var SETTINGS_KEY = 'asil_panel_settings_v8';
+var SESSION_KEY = 'asil_panel_admin_ok_v8';
+var MODE_KEY = 'asil_panel_mode_v8';
+var TV_KEY = 'asil_panel_tv_v8';
+
+var BASE_ITEMS = [
+  {id:'has24', label:'24 Ayar', a:1.0000, s:1.0040},
+  {id:'ayar22', label:'22 Ayar', a:0.9100, s:0.9220},
+  {id:'tam', label:'Tam', a:6.4000, s:6.6200},
+  {id:'yarim', label:'Yarım', a:3.2000, s:3.3200},
+  {id:'ceyrek', label:'Çeyrek', a:1.6000, s:1.7000},
+  {id:'besli', label:'Beşli', a:32.0000, s:33.1000},
+  {id:'resat', label:'Reşat', a:6.4200, s:6.6600},
+  {id:'ata', label:'Ata', a:6.4200, s:6.6600},
+  {id:'gremise', label:'Gremise', a:16.0000, s:16.6000},
+  {id:'ajda', label:'Ajda Bilezik', a:0.8800, s:0.9400}
+];
+var FX = [
+  {id:'usd', label:'[US] USD'},
+  {id:'eur', label:'[EU] EUR'},
+  {id:'gbp', label:'[UK] GBP'},
+  {id:'sar', label:'[SA] SAR'},
+  {id:'chf', label:'[CH] CHF'}
+];
+var SCRAP = [
+  {id:'hurda22', label:'22 Ayar Hurda', baseA:22/24*0.99, baseS:22/24},
+  {id:'hurda14', label:'14 Ayar Hurda', baseA:14/24*0.99, baseS:14/24},
+  {id:'hurda8',  label:'8 Ayar Hurda',  baseA:8/24*0.99,  baseS:8/24}
+];
+
+function buildDefaultSettings(){
+  var labor={}, laborFast={}, fxAdj={}, scrapMul={};
+  BASE_ITEMS.forEach(function(x){ labor[x.id]={a:x.a,s:x.s}; laborFast[x.id]={a:x.a,s:x.s}; });
+  FX.forEach(function(x){ fxAdj[x.id]={a:0,s:0}; });
+  SCRAP.forEach(function(x){ scrapMul[x.id]={a:x.baseA,s:x.baseS}; });
+  return {
+    shopName:'Asil Kuyumcum',
+    shopPhone:'0380 790 1 404',
+    kkRate:7,
+    hasAdjA:0,
+    hasAdjS:0,
+    labor:labor,
+    laborFast:laborFast,
+    fxAdj:fxAdj,
+    scrapMul:scrapMul,
+    adminPass:'1234',
+    customItems:[],
+    hiddenItems:[]
+  };
+}
+
+function loadSettings(){
+  var raw = localStorage.getItem(SETTINGS_KEY);
+  var d = buildDefaultSettings();
+  if (!raw) return d;
+  try{
+    var s = JSON.parse(raw);
+    s.shopName = s.shopName || d.shopName;
+    s.shopPhone = s.shopPhone || d.shopPhone;
+    s.kkRate = isNaN(parseFloat(s.kkRate)) ? d.kkRate : parseFloat(s.kkRate);
+    s.hasAdjA = isNaN(parseFloat(s.hasAdjA)) ? 0 : parseFloat(s.hasAdjA);
+    s.hasAdjS = isNaN(parseFloat(s.hasAdjS)) ? 0 : parseFloat(s.hasAdjS);
+    s.labor = s.labor || d.labor;
+    s.laborFast = s.laborFast || JSON.parse(JSON.stringify(s.labor));
+    s.fxAdj = s.fxAdj || d.fxAdj;
+    s.scrapMul = s.scrapMul || d.scrapMul;
+    s.adminPass = s.adminPass || '1234';
+    s.customItems = s.customItems || [];
+    s.hiddenItems = s.hiddenItems || [];
+    return s;
+  }catch(e){ return d; }
+}
+function saveSettings(){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
+
+var settings = loadSettings();
+var mode = localStorage.getItem(MODE_KEY) || 'normal';
+var tvMode = localStorage.getItem(TV_KEY) === '1';
+var live = {};
+var prev = {};
+var hasA = parseFloat(localStorage.getItem('last_hasA')||'0') || null;
+var hasS = parseFloat(localStorage.getItem('last_hasS')||'0') || null;
+
+function getItems(){
+  return BASE_ITEMS.concat(settings.customItems || []).filter(function(x){
+    return (settings.hiddenItems || []).indexOf(x.id) === -1;
+  });
+}
+function laborOf(item){ return mode === 'hareketli' ? settings.laborFast[item.id] : settings.labor[item.id]; }
+function fmt(v){ return Number(v).toLocaleString('tr-TR',{maximumFractionDigits:0}); }
+function fmt2(v){ return Number(v).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+function updateHeader(){
+  document.getElementById('shopName').textContent = settings.shopName;
+  document.getElementById('shopPhone').textContent = settings.shopPhone;
+}
+function updateModeButton(){
+  var btn = document.getElementById('modBtn');
+  if (mode === 'hareketli'){ btn.textContent='⚡ Hareketli'; btn.classList.add('active'); }
+  else { btn.textContent='⚡ Normal'; btn.classList.remove('active'); }
+}
+function toggleMode(){
+  mode = mode === 'normal' ? 'hareketli' : 'normal';
+  localStorage.setItem(MODE_KEY, mode);
+  updateModeButton();
+  renderRows(true);
+  toast(mode === 'hareketli' ? 'Hareketli mod aktif' : 'Normal mod aktif');
+}
+function applyTvMode(){
+  document.body.classList.toggle('tv-active', tvMode);
+  document.getElementById('tvBtn').classList.toggle('active', tvMode);
+  document.getElementById('tvBtn').textContent = tvMode ? '📺 TV Açık' : '📺 TV';
+}
+function toggleTvMode(){
+  tvMode = !tvMode;
+  localStorage.setItem(TV_KEY, tvMode ? '1' : '0');
+  applyTvMode();
+  toast(tvMode ? 'TV modu aktif' : 'TV modu kapandı');
+}
+function setConn(ok){
+  var now = new Date();
+  document.getElementById('lastUpdate').textContent = 'Son güncelleme: ' + now.toLocaleDateString('tr-TR') + ' ' + now.toLocaleTimeString('tr-TR');
+  var c = document.getElementById('connState');
+  var h = document.getElementById('hasInfo');
+  if (ok && hasA && hasS){
+    c.textContent='● Canlı veri bağlantısı aktif'; c.className='upd-src ok';
+    h.textContent='Has Alış: ' + fmt(hasA) + ' | Has Satış: ' + fmt(hasS); h.className='brand-has ok';
+  } else {
+    c.textContent='⚠ Bağlantı yok'; c.className='upd-src err';
+    h.textContent=(hasA && hasS) ? ('Son veri: ' + fmt(hasA) + ' | ' + fmt(hasS)) : 'Bağlantı bekleniyor...';
+    h.className='brand-has err';
+  }
+}
+function paint(id,val,oldVal){
+  var el=document.getElementById(id); if(!el) return;
+  el.classList.remove('price-up','price-down','price-same');
+  el.textContent = val ? fmt(val) : '—';
+  if (!val || !oldVal) return;
+  if (val > oldVal) el.classList.add('price-up');
+  else if (val < oldVal) el.classList.add('price-down');
+  else el.classList.add('price-same');
+}
+function renderRows(force){
+  var items = getItems();
+  var box = document.getElementById('rows');
+  if (force) box.innerHTML='';
+  items.forEach(function(item){
+    var mul = laborOf(item) || {a:item.a,s:item.s};
+    var buy = hasA ? Math.round(hasA * mul.a) : null;
+    var sell = hasS ? Math.round(hasS * mul.s) : null;
+    var kk = sell ? Math.round(sell * (1 + (parseFloat(settings.kkRate)||0)/100)) : null;
+    var idA='a_'+item.id, idS='s_'+item.id, idK='k_'+item.id;
+    if (force || !document.getElementById(idA)){
+      var row=document.createElement('div');
+      row.className='price-row';
+      row.innerHTML='<span class="birim">'+item.label+'</span><span class="alis" id="'+idA+'">'+(buy?fmt(buy):'—')+'</span><span class="satis" id="'+idS+'">'+(sell?fmt(sell):'—')+'</span><span class="kk" id="'+idK+'">'+(kk?fmt(kk):'—')+'</span>';
+      box.appendChild(row);
+    } else {
+      paint(idA,buy,prev[idA]);
+      paint(idS,sell,prev[idS]);
+      var kkEl=document.getElementById(idK); if (kkEl) kkEl.textContent = kk ? fmt(kk) : '—';
+    }
+    prev[idA]=buy; prev[idS]=sell;
+  });
+}
+function renderTicker(){
+  var html='';
+  FX.forEach(function(x){
+    var adj=(settings.fxAdj||{})[x.id] || {a:0,s:0};
+    var a=(live[x.id+'Alis']||0)+(parseFloat(adj.a)||0);
+    var s=(live[x.id+'Satis']||0)+(parseFloat(adj.s)||0);
+    if (!a || !s) return;
+    html += '<span class="doviz-item">'+x.label+' <span class="a">'+fmt2(a)+'</span> / <span class="s">'+fmt2(s)+'</span></span>';
+  });
+  document.getElementById('ticker').innerHTML = html ? html + html : '⏳ Döviz yükleniyor...';
+}
+function renderFxDesktop(){
+  var html='';
+  FX.forEach(function(x){
+    var adj=(settings.fxAdj||{})[x.id] || {a:0,s:0};
+    var a=(live[x.id+'Alis']||0)+(parseFloat(adj.a)||0);
+    var s=(live[x.id+'Satis']||0)+(parseFloat(adj.s)||0);
+    html += '<div class="side-row"><span class="name">'+x.label+'</span><span class="a">'+(a?fmt2(a):'—')+'</span><span class="s">'+(s?fmt2(s):'—')+'</span></div>';
+  });
+  document.getElementById('fxRowsDesktop').innerHTML = html;
+}
+function renderScrapDesktop(){
+  var html='';
+  SCRAP.forEach(function(x){
+    var z=(settings.scrapMul||{})[x.id] || {a:x.baseA,s:x.baseS};
+    var a=hasA ? Math.round(hasA * (parseFloat(z.a)||x.baseA)) : null;
+    var s=hasS ? Math.round(hasS * (parseFloat(z.s)||x.baseS)) : null;
+    html += '<div class="side-row"><span class="name">'+x.label+'</span><span class="a">'+(a?fmt(a):'—')+'</span><span class="s">'+(s?fmt(s):'—')+'</span></div>';
+  });
+  document.getElementById('scrapRowsDesktop').innerHTML = html;
+}
+function applyData(d){
+  if (!d) return false;
+  var a=parseFloat(d.hasAlis), s=parseFloat(d.hasSatis);
+  if (!a || !s) return false;
+  hasA = a + (parseFloat(settings.hasAdjA)||0);
+  hasS = s + (parseFloat(settings.hasAdjS)||0);
+  localStorage.setItem('last_hasA', hasA);
+  localStorage.setItem('last_hasS', hasS);
+  live = {
+    usdAlis:parseFloat(d.usdAlis)||0, usdSatis:parseFloat(d.usdSatis)||0,
+    eurAlis:parseFloat(d.eurAlis)||0, eurSatis:parseFloat(d.eurSatis)||0,
+    gbpAlis:parseFloat(d.gbpAlis)||0, gbpSatis:parseFloat(d.gbpSatis)||0,
+    sarAlis:parseFloat(d.sarAlis)||0, sarSatis:parseFloat(d.sarSatis)||0,
+    chfAlis:parseFloat(d.chfAlis)||0, chfSatis:parseFloat(d.chfSatis)||0
+  };
+  renderRows(false); renderTicker(); renderFxDesktop(); renderScrapDesktop(); setConn(true);
+  if (document.getElementById('overlay').classList.contains('open')) fillAdminCurrent();
+  return true;
+}
+function failover(){
+  setConn(false);
+  renderRows(false);
+  renderScrapDesktop();
+}
+function fetchPrices(){
+  var xhr=new XMLHttpRequest();
+  xhr.open('GET', WORKER_URL + '?t=' + Date.now(), true);
+  xhr.timeout=12000;
+  xhr.onreadystatechange=function(){
+    if (xhr.readyState !== 4) return;
+    if (xhr.status >= 200 && xhr.status < 300){
+      try{
+        var data=JSON.parse(xhr.responseText);
+        if (!applyData(data)) throw new Error('veri boş');
+      }catch(e){
+        console.log('parse hata', e, xhr.responseText);
+        failover();
       }
-    });
-  }
+    } else failover();
+  };
+  xhr.onerror=failover; xhr.ontimeout=failover; xhr.send();
+}
 
-  if (!bantItems.length) {
-    document.getElementById('dovizBant').innerHTML = '⏳ Döviz yükleniyor...';
-    return;
-  }
+function isAdminPage(){ return location.search.indexOf('admin') !== -1; }
+function isAdminSession(){ return sessionStorage.getItem(SESSION_KEY) === '1'; }
+function askAdmin(){
+  if (!isAdminPage()) return;
+  if (isAdminSession()) return openAdmin();
+  var p=prompt('Yönetici şifresi:');
+  if (p===null) return;
+  if (p === settings.adminPass){ sessionStorage.setItem(SESSION_KEY, '1'); openAdmin(); }
+  else alert('Şifre yanlış');
+}
+function openAdmin(){
+  document.getElementById('aName').value=settings.shopName;
+  document.getElementById('aPhone').value=settings.shopPhone;
+  document.getElementById('hasAdjA').value=settings.hasAdjA;
+  document.getElementById('hasAdjS').value=settings.hasAdjS;
+  document.getElementById('kkRate').value=settings.kkRate;
+  buildAdminRows();
+  fillAdminCurrent();
+  updateCustomerLink();
+  document.getElementById('overlay').classList.add('open');
+}
+function closeAdmin(){ document.getElementById('overlay').classList.remove('open'); }
+function fillAdminCurrent(){
+  document.getElementById('adminHasA').textContent = hasA ? fmt(hasA) + ' ₺' : '—';
+  document.getElementById('adminHasS').textContent = hasS ? fmt(hasS) + ' ₺' : '—';
+}
+function updateCustomerLink(){
+  var link = location.href.split('?')[0].split('#')[0];
+  var el = document.getElementById('customerLink');
+  el.textContent = link;
+  el.dataset.url = link;
+}
+function buildAdminRows(){
+  var html='', htmlFast='', htmlFx='', htmlScrap='', urunHtml='';
+  var allItems = BASE_ITEMS.concat(settings.customItems||[]);
+  allItems.forEach(function(item){
+    if (!settings.labor[item.id]) settings.labor[item.id]={a:item.a,s:item.s};
+    if (!settings.laborFast[item.id]) settings.laborFast[item.id]={a:item.a,s:item.s};
+    var v=settings.labor[item.id], f=settings.laborFast[item.id];
+    var pa=hasA ? fmt(Math.round(hasA * v.a)) : '-';
+    var ps=hasS ? fmt(Math.round(hasS * v.s)) : '-';
+    var pfa=hasA ? fmt(Math.round(hasA * f.a)) : '-';
+    var pfs=hasS ? fmt(Math.round(hasS * f.s)) : '-';
 
-  var html = '';
-  bantItems.forEach(function(it) {
-    html += '<span class="doviz-item">' + it.sym
-      + ' <span class="d-kur" style="color:#5dba6a">' + it.alis + '</span>'
-      + '<span style="color:#888;margin:0 2px">/</span>'
-      + '<span class="d-kur" style="color:#e07050">' + it.satis + '</span>'
-      + ' ₺</span>';
+    html += '<div class="admin-row"><span class="row-label" style="flex:1;min-width:90px">'+item.label+'</span>'
+      + '<div class="pair"><small>A×</small><input class="admin-inp" id="nA_'+item.id+'" type="number" step="0.0001" value="'+Number(v.a).toFixed(4)+'" style="width:84px"><span class="prev-a">'+pa+'</span></div>'
+      + '<div class="pair"><small>S×</small><input class="admin-inp" id="nS_'+item.id+'" type="number" step="0.0001" value="'+Number(v.s).toFixed(4)+'" style="width:84px"><span class="prev-s">'+ps+'</span></div>'
+      + '</div>';
+
+    htmlFast += '<div class="admin-row"><span class="row-label" style="flex:1;min-width:90px">'+item.label+'</span>'
+      + '<div class="pair"><small>A×</small><input class="admin-inp" id="fA_'+item.id+'" type="number" step="0.0001" value="'+Number(f.a).toFixed(4)+'" style="width:84px"><span class="prev-a">'+pfa+'</span></div>'
+      + '<div class="pair"><small>S×</small><input class="admin-inp" id="fS_'+item.id+'" type="number" step="0.0001" value="'+Number(f.s).toFixed(4)+'" style="width:84px"><span class="prev-s">'+pfs+'</span></div>'
+      + '</div>';
+
+    var hidden = (settings.hiddenItems||[]).indexOf(item.id) !== -1;
+    urunHtml += '<div class="urun-item"><span class="urun-name">'+item.label+(hidden?' <small style="color:#777">(gizli)</small>':'')+'</span>'
+      + '<button class="urun-btn hide" onclick="toggleUrun(\\''+item.id+'\\')">'+(hidden?'Göster':'Gizle')+'</button>'
+      + ((item.id.indexOf('custom_')===0) ? '<button class="urun-btn del" onclick="deleteUrun(\\''+item.id+'\\')">Sil</button>' : '')
+      + '</div>';
   });
 
-  document.getElementById('dovizBant').innerHTML = html + html;
+  FX.forEach(function(x){
+    var z=settings.fxAdj[x.id] || {a:0,s:0};
+    htmlFx += '<div class="admin-row"><span class="row-label" style="min-width:90px">'+x.label+'</span>'
+      + '<div class="pair"><small>A±</small><input class="admin-inp" id="fxA_'+x.id+'" type="number" step="0.01" value="'+(z.a||0)+'" style="width:84px"></div>'
+      + '<div class="pair"><small>S±</small><input class="admin-inp" id="fxS_'+x.id+'" type="number" step="0.01" value="'+(z.s||0)+'" style="width:84px"></div>'
+      + '</div>';
+  });
+  SCRAP.forEach(function(x){
+    var z=settings.scrapMul[x.id] || {a:x.baseA,s:x.baseS};
+    htmlScrap += '<div class="admin-row"><span class="row-label" style="min-width:110px">'+x.label+'</span>'
+      + '<div class="pair"><small>A×</small><input class="admin-inp" id="scA_'+x.id+'" type="number" step="0.0001" value="'+Number(z.a).toFixed(4)+'" style="width:84px"></div>'
+      + '<div class="pair"><small>S×</small><input class="admin-inp" id="scS_'+x.id+'" type="number" step="0.0001" value="'+Number(z.s).toFixed(4)+'" style="width:84px"></div>'
+      + '</div>';
+  });
+
+  document.getElementById('adminRows').innerHTML = html;
+  document.getElementById('adminRowsFast').innerHTML = htmlFast;
+  document.getElementById('adminFxRows').innerHTML = htmlFx;
+  document.getElementById('adminScrapRows').innerHTML = htmlScrap;
+  document.getElementById('urunList').innerHTML = urunHtml;
 }
+function toggleUrun(id){
+  settings.hiddenItems = settings.hiddenItems || [];
+  var idx = settings.hiddenItems.indexOf(id);
+  if (idx === -1) settings.hiddenItems.push(id); else settings.hiddenItems.splice(idx,1);
+  saveSettings();
+  buildAdminRows();
+  renderRows(true);
+  toast('Ürün görünürlüğü güncellendi');
+}
+function deleteUrun(id){
+  if (!confirm('Bu özel ürün silinsin mi?')) return;
+  settings.customItems = (settings.customItems||[]).filter(function(x){ return x.id !== id; });
+  delete settings.labor[id];
+  delete settings.laborFast[id];
+  settings.hiddenItems = (settings.hiddenItems||[]).filter(function(x){ return x !== id; });
+  saveSettings();
+  buildAdminRows();
+  renderRows(true);
+  toast('Ürün silindi');
+}
+function addUrun(){
+  var label = document.getElementById('newLabel').value.trim();
+  var a = parseFloat(document.getElementById('newAlisX').value);
+  var s = parseFloat(document.getElementById('newSatisX').value);
+  if (!label) return toast('Ürün adı gir');
+  if (!a || !s) return toast('Çarpanları gir');
+  var id='custom_' + Date.now();
+  settings.customItems.push({id:id,label:label,a:a,s:s});
+  settings.labor[id]={a:a,s:s};
+  settings.laborFast[id]={a:a,s:s};
+  saveSettings();
+  document.getElementById('newLabel').value='';
+  buildAdminRows();
+  renderRows(true);
+  toast('Ürün eklendi');
+}
+function saveAdmin(){
+  settings.shopName = document.getElementById('aName').value || settings.shopName;
+  settings.shopPhone = document.getElementById('aPhone').value || settings.shopPhone;
+  settings.hasAdjA = parseFloat(document.getElementById('hasAdjA').value)||0;
+  settings.hasAdjS = parseFloat(document.getElementById('hasAdjS').value)||0;
+  settings.kkRate = parseFloat(document.getElementById('kkRate').value)||0;
+
+  var allItems = BASE_ITEMS.concat(settings.customItems||[]);
+  allItems.forEach(function(item){
+    settings.labor[item.id] = {
+      a: parseFloat(document.getElementById('nA_'+item.id).value)||item.a,
+      s: parseFloat(document.getElementById('nS_'+item.id).value)||item.s
+    };
+    settings.laborFast[item.id] = {
+      a: parseFloat(document.getElementById('fA_'+item.id).value)||item.a,
+      s: parseFloat(document.getElementById('fS_'+item.id).value)||item.s
+    };
+  });
+  FX.forEach(function(x){
+    settings.fxAdj[x.id] = {
+      a: parseFloat(document.getElementById('fxA_'+x.id).value)||0,
+      s: parseFloat(document.getElementById('fxS_'+x.id).value)||0
+    };
+  });
+  SCRAP.forEach(function(x){
+    settings.scrapMul[x.id] = {
+      a: parseFloat(document.getElementById('scA_'+x.id).value)||x.baseA,
+      s: parseFloat(document.getElementById('scS_'+x.id).value)||x.baseS
+    };
+  });
+
+  var p1=document.getElementById('newPass').value, p2=document.getElementById('newPass2').value;
+  if (p1 || p2){
+    if (p1 !== p2) return toast('Şifreler aynı değil');
+    if (p1.length < 4) return toast('Şifre en az 4 karakter');
+    settings.adminPass = p1;
+  }
+
+  saveSettings();
+  updateHeader();
+  renderRows(true);
+  renderTicker();
+  renderFxDesktop();
+  renderScrapDesktop();
+  setConn(true);
+  closeAdmin();
+  toast('Kaydedildi');
+}
+function resetAdmin(){
+  if (!confirm('Tüm ayarlar sıfırlansın mı?')) return;
+  settings = buildDefaultSettings();
+  saveSettings();
+  updateHeader();
+  buildAdminRows();
+  renderRows(true);
+  renderTicker();
+  renderFxDesktop();
+  renderScrapDesktop();
+  closeAdmin();
+  toast('Sıfırlandı');
+}
+function copyLink(){
+  var link = document.getElementById('customerLink').dataset.url || location.href.split('?')[0].split('#')[0];
+  if (navigator.clipboard) navigator.clipboard.writeText(link).then(function(){ toast('Link kopyalandı'); });
+}
+function shareWA(){
+  var link = document.getElementById('customerLink').dataset.url || location.href.split('?')[0].split('#')[0];
+  var msg = (settings.shopName || 'Asil Kuyumcum') + ' güncel altın fiyatları:\n' + link;
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
+function toast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show')},1800);
+}
+
+document.getElementById('adminBtn').onclick = askAdmin;
+document.getElementById('navAdmin').onclick = askAdmin;
+
+if (isAdminPage()){
+  document.body.classList.add('admin-enabled');
+} else {
+  document.getElementById('bottomNav').style.display = 'none';
+}
+
+updateHeader();
+updateModeButton();
+applyTvMode();
+renderRows(true);
+renderTicker();
+renderFxDesktop();
+renderScrapDesktop();
+setConn(false);
+fetchPrices();
+setInterval(fetchPrices, 5000);
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(function(regs){
+    regs.forEach(function(reg){
+      if (reg.scope.indexOf('/Asil-yeni-panel/') !== -1 || reg.scope.indexOf('/altin/') !== -1) reg.unregister();
+    });
+  }).catch(function(){});
+}
+</script>
+</body>
+</html>
