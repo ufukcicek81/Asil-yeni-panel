@@ -1013,15 +1013,6 @@ function showToast(m) {
   setTimeout(function(){ t.classList.remove('show'); }, 2500);
 }
 
-// ── SERVICE WORKER ───────────────────────────────────────────────────────────
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function() {
-    navigator.serviceWorker.register('sw.js').catch(function(e) {
-      console.log('SW kayıt hatası:', e);
-    });
-  });
-}
-
 // ── BAŞLAT ────────────────────────────────────────────────────────────────────
 settings = loadSettings();
 renderTable();
