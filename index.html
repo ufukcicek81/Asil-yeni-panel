@@ -3,16 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Asil Kuyumcum</title>
+<title>Asil Kuyumcum PRO</title>
 <style>
-body{margin:0;background:#111;color:#fff;font-family:Arial}
-.header{text-align:center;padding:20px;font-size:24px;color:#d4af37}
-.row{display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid #333}
+body{margin:0;background:#0b0b0b;color:#fff;font-family:Arial}
+.header{text-align:center;padding:20px;color:#d4af37;font-size:24px}
+.row{display:flex;justify-content:space-between;padding:14px;border-bottom:1px solid #222;font-size:18px}
+.tv body{font-size:28px}
+button{position:fixed;top:10px;right:10px}
 </style>
 </head>
 <body>
+
 <div class="header">ASİL KUYUMCUM</div>
 <div id="list"></div>
+
+<button onclick="toggleTV()">📺</button>
 
 <script>
 const worker="https://altin-proxy.ufuk87900.workers.dev";
@@ -26,11 +31,18 @@ function load(){
    <div class="row"><b>24 Ayar</b><span>${Math.round(d.hasSatis)}</span></div>
    <div class="row"><b>22 Ayar</b><span>${Math.round(d.hasSatis*0.92)}</span></div>
    <div class="row"><b>Gram Altın</b><span>${Math.round(d.hasSatis)}</span></div>
+   <div class="row"><b>Çeyrek</b><span>${Math.round(d.hasSatis*1.02)}</span></div>
+   <div class="row"><b>Yarım</b><span>${Math.round(d.hasSatis*2.04)}</span></div>
    `;
  });
 }
+setInterval(load,3000);
 load();
-setInterval(load,5000);
+
+function toggleTV(){
+ document.body.classList.toggle("tv");
+}
 </script>
+
 </body>
 </html>
