@@ -227,6 +227,14 @@ body.tv-mode .admin-btn,
 body.tv-mode .mod-btn,
 body.tv-mode .tv-btn { opacity: .45; }
 body.tv-mode .doviz-bant-inner { animation-duration: 18s; }
+/* TV modu sadece müşteri ekranı gibi çalışsın */
+body.tv-mode #adminEkstra,
+body.tv-mode #desktopSide,
+body.tv-mode .desktop-side,
+body.tv-mode #ekstraDovizRows,
+body.tv-mode #ekstraHurdaRows { display: none !important; }
+body.tv-mode .desktop-main { flex: 1 1 100% !important; width: 100% !important; }
+body.tv-mode .desktop-layout { display: block !important; }
 @media (min-width: 768px) {
   body.tv-mode .header { padding: 16px 36px; }
   body.tv-mode .header h1 { font-size: 34px; }
