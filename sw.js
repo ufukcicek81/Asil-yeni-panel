@@ -3,9 +3,13 @@ self.addEventListener('install', function(event) {
 });
 
 self.addEventListener('activate', function(event) {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    Promise.all([
+      self.clients.claim(),
+      self.registration.unregister()
+    ])
+  );
 });
 
 self.addEventListener('fetch', function(event) {
-  // cache zorlamıyoruz, sadece PWA için boş fetch handler
 });
