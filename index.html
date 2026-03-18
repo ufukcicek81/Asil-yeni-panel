@@ -190,6 +190,54 @@ body {
 
 .toast { position: fixed; bottom: 84px; left: 50%; transform: translateX(-50%) translateY(8px); background: #b8960c; color: #fff; padding: 9px 18px; border-radius: 20px; font-size: 13px; opacity: 0; transition: all 0.25s; pointer-events: none; z-index: 200; white-space: nowrap; font-weight: 600; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+.tv-btn { position: absolute; right: 58px; top: 20px; width: 38px; height: 38px; border-radius: 50%; border: 1px solid #555; background: #2a2a2a; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #c8b88a; }
+.tv-btn.active { background: #0f2a3a; border-color: #3da7ff; color: #7fc6ff; }
+@media (min-width: 768px) {
+  .tv-btn { right: 76px; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; }
+}
+body.tv-mode {
+  max-width: 100% !important;
+  background: #000;
+}
+body.tv-mode .header {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+body.tv-mode .header .logo {
+  width: 72px;
+  height: 72px;
+  margin-bottom: 4px;
+}
+body.tv-mode .header h1 { font-size: 28px; }
+body.tv-mode .header .phone { font-size: 18px; }
+body.tv-mode .has-info { font-size: 14px; }
+body.tv-mode .table-header { padding: 14px 22px; }
+body.tv-mode .table-header span { font-size: 18px; }
+body.tv-mode .price-row { padding: 18px 22px; }
+body.tv-mode .price-row .birim,
+body.tv-mode .price-row .alis,
+body.tv-mode .price-row .satis,
+body.tv-mode .price-row .kk { font-size: 28px !important; }
+body.tv-mode .upd-bar,
+body.tv-mode .update-bar { font-size: 14px; }
+body.tv-mode .bottom-nav,
+body.tv-mode .overlay { display: none !important; }
+body.tv-mode .admin-btn,
+body.tv-mode .mod-btn,
+body.tv-mode .tv-btn { opacity: .45; }
+body.tv-mode .doviz-bant-inner { animation-duration: 18s; }
+@media (min-width: 768px) {
+  body.tv-mode .header { padding: 16px 36px; }
+  body.tv-mode .header h1 { font-size: 34px; }
+  body.tv-mode .header .phone { font-size: 22px; }
+  body.tv-mode .table-header span { font-size: 20px; }
+  body.tv-mode .price-row .birim,
+  body.tv-mode .price-row .alis,
+  body.tv-mode .price-row .satis,
+  body.tv-mode .price-row .kk { font-size: 34px !important; }
+}
+
 </style>
 </head>
 <body>
@@ -200,6 +248,7 @@ body {
   <span class="has-info" id="hasInfo"></span>
   <button class="admin-btn" id="adminBtn" onclick="openAdmin()">⋯</button>
   <button class="mod-btn" id="modBtn" onclick="toggleMod()">⚡ Normal</button>
+  <button class="tv-btn" id="tvBtn" onclick="toggleTVMode()">📺</button>
 </div>
 
 <div class="doviz-bant"><div class="doviz-bant-inner" id="dovizBant">⏳ Döviz yükleniyor...</div></div>
@@ -467,6 +516,7 @@ if (window.location.search.indexOf('admin') === -1) {
   mb.style.display = 'flex';
   document.getElementById('adminEkstra').style.display = 'block';
 }
+applyTVMode();
 updateModBtn();
 
 function checkAdminSession() {
@@ -516,6 +566,7 @@ var hasAlis  = parseFloat(localStorage.getItem('gp10_ha') || '0') || null;
 var hasSatis = parseFloat(localStorage.getItem('gp10_hs') || '0') || null;
 var prevPrices = {};
 var aktifMod = localStorage.getItem('gp10_mod') || 'normal';
+var tvMode = localStorage.getItem('gp10_tv') === '1';
 
 function toggleMod() {
   aktifMod = aktifMod === 'normal' ? 'hareketli' : 'normal';
@@ -535,6 +586,28 @@ function updateModBtn() {
     btn.textContent = '⚡ Normal';
     btn.classList.remove('hareketli');
   }
+}
+
+function applyTVMode() {
+  document.body.classList.toggle('tv-mode', tvMode);
+  var btn = document.getElementById('tvBtn');
+  if (btn) {
+    btn.classList.toggle('active', tvMode);
+    btn.textContent = tvMode ? '📺' : '📺';
+    btn.title = tvMode ? 'TV modu açık' : 'TV modu kapalı';
+  }
+}
+
+function toggleTVMode() {
+  tvMode = !tvMode;
+  localStorage.setItem('gp10_tv', tvMode ? '1' : '0');
+  applyTVMode();
+  if (tvMode && document.documentElement.requestFullscreen) {
+    document.documentElement.requestFullscreen().catch(function(){});
+  } else if (!tvMode && document.fullscreenElement && document.exitFullscreen) {
+    document.exitFullscreen().catch(function(){});
+  }
+  showToast(tvMode ? '📺 TV Modu Aktif' : '📺 TV Modu Kapandı');
 }
 
 // Admin butonuna tıklandığında şifre sor
