@@ -6,14 +6,12 @@
 <title>Asil Kuyumcum</title>
 <link rel="manifest" id="manifestLink" href="manifest.json">
 <script>
-const isAdmin = window.location.search.includes('admin'); if(isAdmin) {
-  document.getElementById('manifestLink').href = 'manifest-admin.json';
-}
-
-let hareketli=false;
-function toggleMode(){hareketli=!hareketli;}
-function toggleTV(){document.body.classList.toggle('tv');}
-
+document.addEventListener('DOMContentLoaded', function () {
+  if (window.location.search.indexOf('admin') !== -1) {
+    var mf = document.getElementById('manifestLink');
+    if (mf) mf.href = 'manifest-admin.json';
+  }
+});
 </script>
 <meta name="theme-color" content="#b8960c">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -573,10 +571,10 @@ function renderTable() {
 
   getActiveItems().forEach(function(item) {
     var lab  = getLabor(item);
-    var newA = hasAlis  ? Math.round((hareketli?1.01:1)*hasAlis  * lab.a) : null;
-    var newS = hasSatis ? Math.round((hareketli?1.01:1)*hasSatis * lab.s) : null;
+    var newA = hasAlis  ? Math.round(hasAlis  * lab.a) : null;
+    var newS = hasSatis ? Math.round(hasSatis * lab.s) : null;
     var kkOran = parseFloat(settings.kkOran) || 0;
-    var newKK = newS ? Math.round((hareketli?1.01:1)*newS * (1 + kkOran / 100)) : null;
+    var newKK = newS ? Math.round(newS * (1 + kkOran / 100)) : null;
     var aId  = 'av_' + item.id;
     var sId  = 'sv_' + item.id;
     var kId  = 'kv_' + item.id;
@@ -627,11 +625,11 @@ function setStatus(ok) {
   var hi  = document.getElementById('hasInfo');
   if (ok) {
     src.textContent = '● Canlı — canlidoviz.com'; src.className = 'upd-src ok';
-    hi.textContent  = 'Has Alış: ' + fmt(Math.round((hareketli?1.01:1)*hasAlis)) + '  |  Has Satış: ' + fmt(Math.round((hareketli?1.01:1)*hasSatis));
+    hi.textContent  = 'Has Alış: ' + fmt(Math.round(hasAlis)) + '  |  Has Satış: ' + fmt(Math.round(hasSatis));
     hi.className = 'has-info';
   } else {
     src.textContent = '⚠ Bağlantı yok'; src.className = 'upd-src err';
-    hi.textContent  = hasAlis ? ('Son: ' + fmt(Math.round((hareketli?1.01:1)*hasAlis)) + ' / ' + fmt(Math.round((hareketli?1.01:1)*hasSatis))) : '';
+    hi.textContent  = hasAlis ? ('Son: ' + fmt(Math.round(hasAlis)) + ' / ' + fmt(Math.round(hasSatis))) : '';
     hi.className = 'has-info err';
   }
 }
@@ -669,15 +667,9 @@ function fetchPrices() {
         if (!a || a < 100) throw new Error('Geçersiz fiyat');
         if (!applyPrices(a, s)) throw new Error('applyPrices hata');
         // Döviz verilerini sakla
-        liveDoviz = data;
+        liveDoviz = data || {};
         updateDovizBant({});
-        if (!document.getElementById('overlay').classList.contains('open')) {
-          if (document.getElementById('adminDovizRows')) renderAdminDoviz();
-          if (document.getElementById('adminHurdaRows')) renderAdminHurda();
-        }
-        renderEkstraDoviz();
-        renderEkstraHurda();
-        renderDesktopPanel();
+        refreshAdminDataViews();
       } catch(e) {
         setStatus(false);
         if (hasAlis) renderTable();
@@ -703,8 +695,8 @@ function openAdmin() {
   document.getElementById('aKK').value    = (settings.kkOran || 0).toFixed(2);
   document.getElementById('aHasDuzA').value = settings.hasDuzA || 0;
   document.getElementById('aHasDuzS').value = settings.hasDuzS || 0;
-  document.getElementById('adminHasA').textContent = hasAlis  ? fmt(Math.round((hareketli?1.01:1)*hasAlis))  + ' ₺' : '—';
-  document.getElementById('adminHasS').textContent = hasSatis ? fmt(Math.round((hareketli?1.01:1)*hasSatis)) + ' ₺' : '—';
+  document.getElementById('adminHasA').textContent = hasAlis  ? fmt(Math.round(hasAlis))  + ' ₺' : '—';
+  document.getElementById('adminHasS').textContent = hasSatis ? fmt(Math.round(hasSatis)) + ' ₺' : '—';
   updateCustomerLink();
   renderAdminRows();
   renderAdminDoviz();
@@ -724,8 +716,8 @@ function renderAdminRows() {
   var html = '';
   getActiveItems().forEach(function(item) {
     var lab = getLabor(item);
-    var pA  = hasAlis  ? fmt(Math.round((hareketli?1.01:1)*hasAlis  * lab.a)) : '-';
-    var pS  = hasSatis ? fmt(Math.round((hareketli?1.01:1)*hasSatis * lab.s)) : '-';
+    var pA  = hasAlis  ? fmt(Math.round(hasAlis  * lab.a)) : '-';
+    var pS  = hasSatis ? fmt(Math.round(hasSatis * lab.s)) : '-';
     html += '<div class="admin-row">'
       + '<span class="row-label" style="flex:1;min-width:70px">' + item.label + '</span>'
       + '<div class="inp-group"><span class="inp-unit">Alis x</span>'
@@ -741,8 +733,8 @@ function renderAdminRows() {
   var htmlH = '';
   getActiveItems().forEach(function(item) {
     var labH = (settings.laborH && settings.laborH[item.id]) ? settings.laborH[item.id] : (settings.labor && settings.labor[item.id] ? settings.labor[item.id] : { a: item.defA, s: item.defS });
-    var pA  = hasAlis  ? fmt(Math.round((hareketli?1.01:1)*hasAlis  * labH.a)) : '-';
-    var pS  = hasSatis ? fmt(Math.round((hareketli?1.01:1)*hasSatis * labH.s)) : '-';
+    var pA  = hasAlis  ? fmt(Math.round(hasAlis  * labH.a)) : '-';
+    var pS  = hasSatis ? fmt(Math.round(hasSatis * labH.s)) : '-';
     htmlH += '<div class="admin-row" style="background:#1e1500;border-color:#3a2800">'
       + '<span class="row-label" style="flex:1;min-width:70px;color:#e0c080">' + item.label + '</span>'
       + '<div class="inp-group"><span class="inp-unit">Alis x</span>'
@@ -976,12 +968,21 @@ jsonbinLoad(function(cloud) {
     localStorage.setItem('gp10', JSON.stringify(settings));
     document.getElementById('priceRows').innerHTML = '';
     renderTable();
+    refreshAdminDataViews();
   }
 });
 
 // ── DÖVİZ BANT ───────────────────────────────────────────────────────────────
 var dovizCache = {};
 var liveDoviz = {}; // worker'dan gelen canlı döviz verileri
+
+function refreshAdminDataViews() {
+  try { if (document.getElementById('adminDovizRows')) renderAdminDoviz(); } catch(e) {}
+  try { if (document.getElementById('adminHurdaRows')) renderAdminHurda(); } catch(e) {}
+  try { if (document.getElementById('ekstraDovizRows')) renderEkstraDoviz(); } catch(e) {}
+  try { if (document.getElementById('ekstraHurdaRows')) renderEkstraHurda(); } catch(e) {}
+  try { if (document.getElementById('desktopDovizRows') || document.getElementById('desktopHurdaRows')) renderDesktopPanel(); } catch(e) {}
+}
 
 function fetchDoviz() {
   // Worker'dan döviz verilerini çek (zaten fetchPrices ile geliyor, cachedDoviz kullan)
@@ -1070,6 +1071,7 @@ function updateDovizBant(rates) {
 // ── ADMİN DÖVİZ & HURDA TABLOSU ──────────────────────────────────────────────
 function renderAdminDoviz() {
   var html = '';
+  if (!liveDoviz) liveDoviz = {};
   DOVIZLER.forEach(function(d) {
     var alis  = liveDoviz[d.id+'Alis']  || 0;
     var satis = liveDoviz[d.id+'Satis'] || 0;
@@ -1098,8 +1100,8 @@ function renderAdminHurda() {
     var defS = h.oran * 1.00;
     var carpA = parseFloat((settings.hurdaCarp && settings.hurdaCarp[h.id+'A']) || defA.toFixed(4));
     var carpS = parseFloat((settings.hurdaCarp && settings.hurdaCarp[h.id+'S']) || defS.toFixed(4));
-    var alis  = hasAlis  ? Math.round((hareketli?1.01:1)*hasAlis  * carpA) : null;
-    var satis = hasSatis ? Math.round((hareketli?1.01:1)*hasSatis * carpS) : null;
+    var alis  = hasAlis  ? Math.round(hasAlis  * carpA) : null;
+    var satis = hasSatis ? Math.round(hasSatis * carpS) : null;
     html += '<div class="admin-row" style="flex-wrap:wrap;gap:4px">'
       + '<span class="row-label" style="min-width:100px">' + h.label + '</span>'
       + '<span style="font-size:13px;color:#5dba6a;min-width:70px">' + (alis ? fmt(alis) : '—') + ' ₺</span>'
@@ -1123,6 +1125,7 @@ function renderDesktopPanel() {
   side.style.display = (isAdmin && isDesktop) ? 'flex' : 'none';
   if (!isAdmin || !isDesktop) return;
   side.style.flexDirection = 'column';
+  if (!liveDoviz) liveDoviz = {};
 
   // Döviz
   var dovizHtml = '';
@@ -1144,8 +1147,8 @@ function renderDesktopPanel() {
   HURDALAR.forEach(function(h) {
     var carpA = parseFloat((settings.hurdaCarp && settings.hurdaCarp[h.id+'A']) || h.oran * 0.99);
     var carpS = parseFloat((settings.hurdaCarp && settings.hurdaCarp[h.id+'S']) || h.oran);
-    var alis  = hasAlis  ? fmt(Math.round((hareketli?1.01:1)*hasAlis  * carpA)) : '—';
-    var satis = hasSatis ? fmt(Math.round((hareketli?1.01:1)*hasSatis * carpS)) : '—';
+    var alis  = hasAlis  ? fmt(Math.round(hasAlis  * carpA)) : '—';
+    var satis = hasSatis ? fmt(Math.round(hasSatis * carpS)) : '—';
     hurdaHtml += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;padding:11px 18px;border-bottom:1px solid #2e2e2e;background:#1a1a1a">'
       + '<span style="font-size:15px;font-weight:600;color:#e8d9b0">' + h.label + '</span>'
       + '<span style="font-size:15px;font-weight:600;color:#5dba6a;text-align:right">' + alis + '</span>'
@@ -1184,8 +1187,8 @@ function renderEkstraHurda() {
     var defS = h.oran * 1.00;
     var carpA = parseFloat((settings.hurdaCarp && settings.hurdaCarp[h.id+'A']) || defA);
     var carpS = parseFloat((settings.hurdaCarp && settings.hurdaCarp[h.id+'S']) || defS);
-    var alis  = hasAlis  ? Math.round((hareketli?1.01:1)*hasAlis  * carpA) : null;
-    var satis = hasSatis ? Math.round((hareketli?1.01:1)*hasSatis * carpS) : null;
+    var alis  = hasAlis  ? Math.round(hasAlis  * carpA) : null;
+    var satis = hasSatis ? Math.round(hasSatis * carpS) : null;
     html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;padding:9px 12px;border-bottom:1px solid #2e2e2e;background:#1a1a1a">'
       + '<span style="font-size:15px;font-weight:600;color:#e8d9b0">' + h.label + '</span>'
       + '<span style="font-size:15px;font-weight:600;color:#f0e6c8;text-align:right">' + (alis ? fmt(alis) : '—') + '</span>'
@@ -1194,11 +1197,6 @@ function renderEkstraHurda() {
   });
   el.innerHTML = html;
 }
-
-let hareketli=false;
-function toggleMode(){hareketli=!hareketli;}
-function toggleTV(){document.body.classList.toggle('tv');}
-
 </script>
 </body>
 </html>
