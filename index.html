@@ -597,13 +597,7 @@ function updateModBtn() {
 }
 
 function applyTVMode() {
-  document.body.classList.toggle('tv-mode', tvMode);
-  var btn = document.getElementById('tvBtn');
-  if (btn) {
-    btn.classList.toggle('active', tvMode);
-    btn.title = tvMode ? 'TV modu açık' : 'TV modu kapalı';
-  }
-} catch(e) {}
+  try { localStorage.removeItem('gp10_tv'); } catch(e) {}
   document.body.classList.toggle('tv-mode', tvMode);
   var btn = document.getElementById('tvBtn');
   if (btn) {
