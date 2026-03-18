@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASİL KUYUMCUM</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#000">
+<style>
+body{margin:0;background:#000;color:#fff;font-family:Arial}
+.header{text-align:center;padding:18px;color:#d4af37;font-size:26px}
+.row{display:flex;justify-content:space-between;padding:14px;border-bottom:1px solid #222}
+.btn{position:fixed;top:10px;padding:6px 10px;background:#222;color:#fff;border:none}
+.tvbtn{right:10px}
+.adminbtn{right:60px}
+.modbtn{right:120px}
+.admin{display:none;background:#111;padding:10px}
+.tv .row{font-size:30px;padding:20px}
+.tv .header{font-size:40px}
+</style>
+</head>
+<body>
+
+<div class="header">ASİL KUYUMCUM</div>
+<div id="main"></div>
+
+<div id="adminPanel" class="admin">
+<h3>DÖVİZ</h3>
+<div id="doviz"></div>
+<h3>HURDA</h3>
+<div id="hurda"></div>
+</div>
+
+<button class="btn tvbtn" onclick="toggleTV()">📺</button>
+<button class="btn adminbtn" onclick="toggleAdmin()">⚙️</button>
+<button class="btn modbtn" onclick="toggleMode()">⚡</button>
+
+<script>
+const worker="https://altin-proxy.ufuk87900.workers.dev";
+let hareketli=false;
+
+function render(d){
+ const main=document.getElementById("main");
+ main.innerHTML="";
+
+ let k = hareketli ? 1.01 : 1;
+
+ const items=[
+  {n:"24 Ayar",v:d.hasSatis},
+  {n:"22 Ayar",v:d.hasSatis*0.92},
+  {n:"Gram Altın",v:d.hasSatis},
+  {n:"Çeyrek",v:d.hasSatis*1.02},
+  {n:"Yarım",v:d.hasSatis*2.04},
+  {n:"Tam",v:d.hasSatis*4.08}
+ ];
+
+ items.forEach(i=>{
+  const r=document.createElement("div");
+  r.className="row";
+  r.innerHTML=`<b>${i.n}</b><span>${Math.round(i.v*k)}</span>`;
+  main.appendChild(r);
+ });
+
+ if(document.getElementById("adminPanel").style.display==="block"){
+  const doviz=document.getElementById("doviz");
+  doviz.innerHTML="";
+  ["usd","eur","gbp"].forEach(k=>{
+    if(d[k+"Satis"]){
+      const r=document.createElement("div");
+      r.className="row";
+      r.innerHTML=`<b>${k.toUpperCase()}</b><span>${d[k+"Satis"].toFixed(2)}</span>`;
+      doviz.appendChild(r);
+    }
+  });
+
+  const hurda=document.getElementById("hurda");
+  hurda.innerHTML="";
+  [{n:"22 Hurda",o:22/24},{n:"14 Hurda",o:14/24}]
+  .forEach(h=>{
+    const r=document.createElement("div");
+    r.className="row";
+    r.innerHTML=`<b>${h.n}</b><span>${Math.round(d.hasSatis*h.o)}</span>`;
+    hurda.appendChild(r);
+  });
+ }
+}
+
+function load(){
+ fetch(worker).then(r=>r.json()).then(render);
+}
+
+setInterval(load,3000);
+load();
+
+function toggleAdmin(){
+ const p=document.getElementById("adminPanel");
+ p.style.display = p.style.display==="block"?"none":"block";
+}
+function toggleTV(){ document.body.classList.toggle("tv"); }
+function toggleMode(){ hareketli=!hareketli; }
+
+if('serviceWorker' in navigator){
+ navigator.serviceWorker.register('sw.js');
+}
+</script>
+
+</body>
+</html>
