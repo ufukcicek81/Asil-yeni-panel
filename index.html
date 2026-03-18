@@ -878,6 +878,7 @@ function toggleUrun(id) {
     settings.hiddenItems.splice(idx, 1);
     showToast('Gosterildi');
   }
+  localStorage.setItem('gp10', JSON.stringify(settings));
   document.getElementById('priceRows').innerHTML = '';
   renderTable();
   renderUrunList();
@@ -894,38 +895,42 @@ function addUrun() {
   settings.customItems.push({ id:id, label:label, defA:alisX, defS:satisX });
   settings.labor[id] = { a:alisX, s:satisX };
   document.getElementById('newLabel').value = '';
+  localStorage.setItem('gp10', JSON.stringify(settings));
   document.getElementById('priceRows').innerHTML = '';
   renderTable();
   renderUrunList();
-  showToast(label + ' eklendi');
+  showToast(label + ' eklendi ve kaydedildi');
 }
 
 function restoreDefault(id) {
   settings.deletedItems = (settings.deletedItems || []).filter(function(x){ return x !== id; });
+  localStorage.setItem('gp10', JSON.stringify(settings));
   document.getElementById('priceRows').innerHTML = '';
   renderTable();
   renderUrunList();
-  showToast('Geri getirildi!');
+  showToast('Geri getirildi ve kaydedildi!');
 }
 
 function deleteDefault(id) {
   if (!confirm('Bu urunu silmek istiyor musunuz? Varsayilana don butonu ile geri getirebilirsiniz.')) return;
   if (!settings.deletedItems) settings.deletedItems = [];
   settings.deletedItems.push(id);
+  localStorage.setItem('gp10', JSON.stringify(settings));
   document.getElementById('priceRows').innerHTML = '';
   renderTable();
   renderUrunList();
-  showToast('Silindi');
+  showToast('Silindi ve kaydedildi');
 }
 
 function deleteUrun(id) {
   if (!confirm('Bu urunu silmek istiyor musunuz?')) return;
   settings.customItems = (settings.customItems || []).filter(function(c){ return c.id !== id; });
   delete settings.labor[id];
+  localStorage.setItem('gp10', JSON.stringify(settings));
   document.getElementById('priceRows').innerHTML = '';
   renderTable();
   renderUrunList();
-  showToast('Silindi');
+  showToast('Silindi ve kaydedildi');
 }
 
 function saveAdmin() {
