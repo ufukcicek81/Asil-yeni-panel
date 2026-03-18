@@ -6,12 +6,18 @@
 <title>Asil Kuyumcum</title>
 <link rel="manifest" id="manifestLink" href="manifest.json">
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-  if (window.location.search.indexOf('admin') !== -1) {
-    var mf = document.getElementById('manifestLink');
-    if (mf) mf.href = 'manifest-admin.json';
+(function () {
+  var hasAdminParam = window.location.search.indexOf('admin') !== -1;
+  var adminSaved = localStorage.getItem('gp10_admin') === '1';
+  if (hasAdminParam && !adminSaved) {
+    localStorage.setItem('gp10_admin', '1');
+    adminSaved = true;
   }
-});
+  var mf = document.getElementById('manifestLink');
+  if (mf && (hasAdminParam || adminSaved)) {
+    mf.href = 'manifest-admin.json';
+  }
+})();
 </script>
 <meta name="theme-color" content="#b8960c">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -515,26 +521,44 @@ var FIREBASE_URL = 'https://asil-kuyumculuk-2feb6-default-rtdb.firebaseio.com/ay
 var ADMIN_PASS = '1234';
 var IS_ADMIN = false;
 
-// ?admin yoksa buton gizli
-if (window.location.search.indexOf('admin') === -1) {
+// Admin erişimi artık localStorage ile kalıcı
+var HAS_ADMIN_PARAM = window.location.search.indexOf('admin') !== -1;
+var HAS_ADMIN_SAVED = localStorage.getItem('gp10_admin') === '1';
+
+if (HAS_ADMIN_PARAM && !HAS_ADMIN_SAVED) {
+  localStorage.setItem('gp10_admin', '1');
+  HAS_ADMIN_SAVED = true;
+}
+
+if (!HAS_ADMIN_PARAM && !HAS_ADMIN_SAVED) {
   document.getElementById('adminBtn').style.display = 'none';
   document.getElementById('bottomNav').style.display = 'none';
 } else {
   var mb = document.getElementById('modBtn');
-  mb.style.display = 'flex';
+  if (mb) mb.style.display = 'flex';
+  var ab = document.getElementById('adminBtn');
+  if (ab) ab.style.display = 'flex';
+  var bn = document.getElementById('bottomNav');
+  if (bn) bn.style.display = 'flex';
   document.getElementById('adminEkstra').style.display = 'block';
 }
 applyTVMode();
 updateModBtn();
 
 function checkAdminSession() {
-  return sessionStorage.getItem('gp10_admin') === '1';
+  return localStorage.getItem('gp10_admin') === '1';
 }
 
 function openAdminLogin() {
+  if (checkAdminSession()) {
+    IS_ADMIN = true;
+    openAdmin();
+    return;
+  }
   var pass = prompt('Yönetici şifresi:');
   if (pass === null) return;
   if (pass === ADMIN_PASS) {
+    localStorage.setItem('gp10_admin', '1');
     sessionStorage.setItem('gp10_admin', '1');
     IS_ADMIN = true;
     openAdmin();
@@ -785,6 +809,11 @@ function openAdmin() {
   document.getElementById('overlay').classList.add('open');
 }
 function closeAdmin() { document.getElementById('overlay').classList.remove('open'); }
+function clearAdminSession() {
+  localStorage.removeItem('gp10_admin');
+  sessionStorage.removeItem('gp10_admin');
+  location.href = window.location.href.split('?')[0].split('#')[0];
+}
 
 function updateCustomerLink() {
   var base = window.location.href.split('?')[0].split('#')[0];
@@ -1014,7 +1043,7 @@ function showToast(m) {
 // ── SERVICE WORKER ───────────────────────────────────────────────────────────
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
-    navigator.serviceWorker.register('sw.js').catch(function(e) {
+    navigator.serviceWorker.register('sw.js', { scope: './' }).catch(function(e) {
       console.log('SW kayıt hatası:', e);
     });
   });
