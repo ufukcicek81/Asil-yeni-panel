@@ -128,10 +128,6 @@ body {
 .price-row .birim { font-size: 17px; font-weight: 500; color: #e8d9b0; }
 .price-row .alis, .price-row .satis { text-align: right; font-size: 17px; transition: color 0.4s ease; font-weight: 600; }
 .price-row .kk { text-align: right; font-size: 15px; font-weight: 600; color: #7ab0e0; }
-.change-rate { display:block; font-size:11px; line-height:1.1; margin-top:3px; font-weight:700; }
-.change-up { color:#2ecc71; }
-.change-down { color:#e74c3c; }
-.change-same { color:inherit; opacity:.95; }
 .price-up   { color: #2ecc71 !important; font-weight: 700 !important; }
 .price-down { color: #e74c3c !important; font-weight: 700 !important; }
 .price-same { color: #f0e6c8 !important; }
@@ -247,6 +243,58 @@ body.tv-mode .desktop-layout { display: block !important; }
   body.tv-mode .price-row .kk { font-size: 34px !important; }
 }
 
+
+/* Varliklarim */
+.portfolio-wrap { display:none; padding:12px; }
+.portfolio-wrap.active { display:block; }
+.summary-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+.summary-card {
+  background:#1e1e1e; border:1px solid #333; border-radius:12px;
+  padding:12px; box-shadow:0 1px 2px rgba(0,0,0,.15);
+}
+.summary-card .label { font-size:12px; color:#c8b88a; margin-bottom:6px; }
+.summary-card .value { font-size:18px; font-weight:700; color:#f0d060; }
+.summary-card .value.kar { color:#2ecc71; }
+.summary-card .value.zarar { color:#e74c3c; }
+.portfolio-card {
+  background:#1e1e1e; border:1px solid #333; border-radius:12px;
+  padding:12px; margin-bottom:12px;
+}
+.portfolio-title { font-size:13px; font-weight:700; color:#d4af37; margin-bottom:10px; text-transform:uppercase; letter-spacing:.5px; }
+.portfolio-form-grid { display:grid; grid-template-columns:1fr; gap:10px; }
+.portfolio-label { display:block; font-size:12px; color:#c8b88a; margin-bottom:5px; }
+.portfolio-inp, .portfolio-select {
+  width:100%; padding:10px 12px; border:1px solid #444; border-radius:10px;
+  font-size:14px; background:#2a2a2a; color:#f0e6c8;
+}
+.portfolio-inp:focus, .portfolio-select:focus { outline:none; border-color:#d4af37; background:#333; }
+.portfolio-btn-row { display:flex; gap:8px; margin-top:10px; }
+.portfolio-btn-primary, .portfolio-btn-secondary, .portfolio-btn-danger {
+  border:none; border-radius:10px; padding:10px 12px; font-size:13px; font-weight:700; cursor:pointer;
+}
+.portfolio-btn-primary { background:#b8960c; color:#fff; flex:1; }
+.portfolio-btn-secondary { background:#1a4a8a; color:#fff; }
+.portfolio-btn-danger { background:#6b1a1a; color:#fff; }
+.holding-card {
+  background:#202020; border:1px solid #2e2e2e; border-radius:12px; padding:12px; margin-bottom:10px;
+}
+.holding-head { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:8px; }
+.holding-name { font-size:16px; font-weight:700; color:#f0d060; }
+.holding-pct { font-size:12px; font-weight:700; }
+.holding-pct.up { color:#2ecc71; }
+.holding-pct.down { color:#e74c3c; }
+.holding-pct.same { color:#aaa; }
+.holding-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px 12px; }
+.holding-grid div { font-size:12px; color:#c8b88a; }
+.holding-grid strong { display:block; color:#f0e6c8; font-size:14px; margin-top:2px; }
+.holding-note { margin-top:8px; font-size:12px; color:#aaa; }
+.empty-portfolio { color:#888; font-size:13px; text-align:center; padding:14px 0; }
+@media (min-width:768px){
+  .portfolio-wrap { padding:18px 24px; }
+  .summary-grid { grid-template-columns:repeat(4,1fr); }
+  .portfolio-form-grid { grid-template-columns:1.2fr .8fr .9fr 1.1fr; }
+}
+
 </style>
 </head>
 <body>
@@ -291,6 +339,74 @@ body.tv-mode .desktop-layout { display: block !important; }
   <div id="ekstraHurdaRows"></div>
 </div>
 
+
+<div id="portfolioWrap" class="portfolio-wrap">
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="label">Toplam Güncel Değer</div>
+      <div class="value" id="pfTotalCurrent">0 TL</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">Toplam Maliyet</div>
+      <div class="value" id="pfTotalCost">0 TL</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">Kâr / Zarar</div>
+      <div class="value" id="pfProfitLoss">0 TL</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">USD / EUR Karşılığı</div>
+      <div class="value" id="pfUsdEur">0 $ / 0 €</div>
+    </div>
+  </div>
+
+  <div class="portfolio-card">
+    <div class="portfolio-title">Yeni Varlık Ekle</div>
+    <div class="portfolio-form-grid">
+      <div>
+        <label class="portfolio-label">Varlık Türü</label>
+        <select class="portfolio-select" id="pfType">
+          <option value="gram_altin">Gram Altın</option>
+          <option value="has_altin">Has Altın</option>
+          <option value="22ayar">22 Ayar</option>
+          <option value="24ayar">24 Ayar</option>
+          <option value="ceyrek">Çeyrek Altın</option>
+          <option value="yarim">Yarım Altın</option>
+          <option value="tam">Tam Altın</option>
+          <option value="cumhuriyet">Cumhuriyet Altını</option>
+          <option value="resat">Reşat Altın</option>
+          <option value="ata">Ata Altın</option>
+          <option value="hurda_altin">Hurda Altın</option>
+          <option value="usd">Dolar</option>
+          <option value="eur">Euro</option>
+          <option value="other">Diğer</option>
+        </select>
+      </div>
+      <div>
+        <label class="portfolio-label">Miktar / Adet / Gram</label>
+        <input class="portfolio-inp" id="pfQty" type="number" step="0.001" placeholder="0">
+      </div>
+      <div>
+        <label class="portfolio-label">Toplam Alış Maliyeti (TL)</label>
+        <input class="portfolio-inp" id="pfCost" type="number" step="0.01" placeholder="0">
+      </div>
+      <div>
+        <label class="portfolio-label">Not</label>
+        <input class="portfolio-inp" id="pfNote" type="text" placeholder="İsteğe bağlı">
+      </div>
+    </div>
+    <div class="portfolio-btn-row">
+      <button class="portfolio-btn-primary" id="pfSaveBtn">Varlık Ekle</button>
+      <button class="portfolio-btn-secondary" id="pfCancelEditBtn" style="display:none;">Düzenlemeyi İptal</button>
+    </div>
+  </div>
+
+  <div class="portfolio-card">
+    <div class="portfolio-title">Kayıtlı Varlıklar</div>
+    <div id="pfList"></div>
+  </div>
+</div>
+
 <div class="update-bar">
   <span class="upd-text" id="updTime">Yükleniyor...</span>
   <span class="upd-src" id="updSrc"></span>
@@ -324,6 +440,12 @@ body.tv-mode .desktop-layout { display: block !important; }
 <div class="bottom-nav" id="bottomNav">
   <button class="nav-item active"><span class="nav-icon">📊</span>Fiyat Panosu</button>
   <button class="nav-item" onclick="openAdmin()"><span class="nav-icon">⚙️</span>Yönetici</button>
+
+<button class="nav-item" id="navPortfolio">
+  <span class="nav-icon">💼</span>
+  <span>Varlıklarım</span>
+</button>
+
 </div>
 
 <div class="overlay" id="overlay" onclick="if(event.target===this)closeAdmin()">
@@ -557,6 +679,32 @@ if (window.location.search.indexOf('admin') === -1 || FORCE_TV) {
 applyTVMode();
 updateModBtn();
 
+try {
+  var pfSaveBtn = document.getElementById('pfSaveBtn');
+  if (pfSaveBtn) pfSaveBtn.onclick = savePortfolioItem;
+  var pfCancelBtn = document.getElementById('pfCancelEditBtn');
+  if (pfCancelBtn) pfCancelBtn.onclick = clearPortfolioForm;
+  var navPf = document.getElementById('navPortfolio');
+  if (navPf) navPf.onclick = function() {
+    hideAdmin && hideAdmin();
+    showPortfolioSection();
+    var navs = document.querySelectorAll('.nav-item');
+    navs.forEach(function(n){ n.classList.remove('active'); });
+    navPf.classList.add('active');
+  };
+  var firstNav = document.querySelector('.nav-item:first-child');
+  if (firstNav) {
+    firstNav.addEventListener('click', function(){
+      hidePortfolioSection();
+      var navs = document.querySelectorAll('.nav-item');
+      navs.forEach(function(n){ n.classList.remove('active'); });
+      firstNav.classList.add('active');
+    });
+  }
+  renderPortfolio();
+} catch(e) {}
+
+
 function checkAdminSession() {
   return sessionStorage.getItem('gp10_admin') === '1';
 }
@@ -616,6 +764,7 @@ function toggleMod() {
   updateModBtn();
   document.getElementById('priceRows').innerHTML = '';
   renderTable();
+try { renderPortfolio(); } catch(e) {}
   showToast(aktifMod === 'hareketli' ? '⚡ Hareketli Mod Aktif' : '✅ Normal Mod Aktif');
 }
 
@@ -714,13 +863,13 @@ function renderTable() {
       var div = document.createElement('div');
       div.className = 'price-row'; div.id = rId;
       div.innerHTML = '<span class="birim">' + item.label + '</span>'
-        + '<span class="alis"  id="' + aId + '">' + formatPriceWithChange(newA, item.id+'_a') + '</span>'
-        + '<span class="satis" id="' + sId + '">' + formatPriceWithChange(newS, item.id+'_s') + '</span>'
+        + '<span class="alis"  id="' + aId + '">' + (newA ? fmt(newA) : '—') + '</span>'
+        + '<span class="satis" id="' + sId + '">' + (newS ? fmt(newS) : '—') + '</span>'
         + '<span class="kk"    id="' + kId + '">' + (newKK ? fmt(newKK) : '—') + '</span>';
       container.appendChild(div);
     } else {
-      updatePriceWithChange(document.getElementById(aId), document.getElementById(rId), newA, item.id+'_a', 'alis', true);
-      updatePriceWithChange(document.getElementById(sId), document.getElementById(rId), newS, item.id+'_s', 'satis', false);
+      updateCell(document.getElementById(aId), document.getElementById(rId), newA, prevPrices[item.id+'_a'], 'alis', true);
+      updateCell(document.getElementById(sId), document.getElementById(rId), newS, prevPrices[item.id+'_s'], 'satis', false);
       var kkEl = document.getElementById(kId);
       if (kkEl) kkEl.textContent = newKK ? fmt(newKK) : '—';
     }
@@ -728,78 +877,6 @@ function renderTable() {
     if (newS) prevPrices[item.id+'_s'] = newS;
   });
 }
-
-
-function getTradingDayKey() {
-  var d = new Date();
-  var resetHour = 9; // piyasa açılışı
-  if (d.getHours() < resetHour) {
-    d.setDate(d.getDate() - 1);
-  }
-  var y = d.getFullYear();
-  var m = String(d.getMonth() + 1).padStart(2, '0');
-  var day = String(d.getDate()).padStart(2, '0');
-  return y + '-' + m + '-' + day;
-}
-
-function getBaseStorageKey(priceKey) {
-  return 'gp10_pct_base_' + getTradingDayKey() + '_' + priceKey;
-}
-
-function getDailyBase(priceKey, currentValue) {
-  var storageKey = getBaseStorageKey(priceKey);
-  var saved = Number(localStorage.getItem(storageKey) || 0);
-  if (!saved && currentValue) {
-    saved = Number(currentValue);
-    try { localStorage.setItem(storageKey, String(saved)); } catch(e) {}
-  }
-  return saved;
-}
-
-function getPercentChange(baseValue, newValue) {
-  baseValue = Number(baseValue);
-  newValue = Number(newValue);
-  if (!baseValue || !newValue) return { text: '', cls: 'change-same' };
-  var diff = ((newValue - baseValue) / baseValue) * 100;
-  var rounded = Math.abs(diff).toFixed(2);
-  if (diff > 0) return { text: '+%' + rounded, cls: 'change-up' };
-  if (diff < 0) return { text: '-%' + rounded, cls: 'change-down' };
-  return { text: '%0.00', cls: 'change-same' };
-}
-
-function formatPriceWithChange(newVal, priceKey) {
-  if (!newVal) return '—';
-  var baseVal = getDailyBase(priceKey, newVal);
-  var ch = getPercentChange(baseVal, newVal);
-  if (!ch.text) return fmt(newVal);
-  return fmt(newVal) + '<span class="change-rate ' + ch.cls + '">' + ch.text + '</span>';
-}
-
-function updatePriceWithChange(el, row, newVal, priceKey, cls, isAlis) {
-  if (!el) return;
-  if (!newVal) {
-    el.textContent = '—';
-    el.className = cls;
-    return;
-  }
-  var baseVal = getDailyBase(priceKey, newVal);
-  var visualPrev = Number(el.getAttribute('data-last') || 0);
-  el.innerHTML = formatPriceWithChange(newVal, priceKey);
-  el.className = cls;
-  el.setAttribute('data-last', String(newVal));
-
-  if (!visualPrev) return;
-  if (newVal > visualPrev) {
-    el.classList.add('price-up');
-    if (row && isAlis) row.classList.add('flash-up'); else if (row) row.classList.add('flash-down');
-  } else if (newVal < visualPrev) {
-    el.classList.add('price-down');
-    if (row && isAlis) row.classList.add('flash-down'); else if (row) row.classList.add('flash-up');
-  } else {
-    el.classList.add('price-same');
-  }
-}
-
 
 function updateCell(el, row, newVal, oldVal, cls, isAlis) {
   if (!el || !newVal) return;
