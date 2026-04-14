@@ -714,13 +714,13 @@ function renderTable() {
       var div = document.createElement('div');
       div.className = 'price-row'; div.id = rId;
       div.innerHTML = '<span class="birim">' + item.label + '</span>'
-        + '<span class="alis"  id="' + aId + '">' + formatPriceWithChange(newA, null) + '</span>'
-        + '<span class="satis" id="' + sId + '">' + formatPriceWithChange(newS, null) + '</span>'
+        + '<span class="alis"  id="' + aId + '">' + formatPriceWithChange(newA, item.id+'_a') + '</span>'
+        + '<span class="satis" id="' + sId + '">' + formatPriceWithChange(newS, item.id+'_s') + '</span>'
         + '<span class="kk"    id="' + kId + '">' + (newKK ? fmt(newKK) : '—') + '</span>';
       container.appendChild(div);
     } else {
-      updatePriceWithChange(document.getElementById(aId), document.getElementById(rId), newA, prevPrices[item.id+'_a'], 'alis', true);
-      updatePriceWithChange(document.getElementById(sId), document.getElementById(rId), newS, prevPrices[item.id+'_s'], 'satis', false);
+      updatePriceWithChange(document.getElementById(aId), document.getElementById(rId), newA, item.id+'_a', 'alis', true);
+      updatePriceWithChange(document.getElementById(sId), document.getElementById(rId), newS, item.id+'_s', 'satis', false);
       var kkEl = document.getElementById(kId);
       if (kkEl) kkEl.textContent = newKK ? fmt(newKK) : '—';
     }
@@ -730,38 +730,69 @@ function renderTable() {
 }
 
 
-function getPercentChange(oldValue, newValue) {
-  oldValue = Number(oldValue);
+function getTradingDayKey() {
+  var d = new Date();
+  var resetHour = 9; // piyasa açılışı
+  if (d.getHours() < resetHour) {
+    d.setDate(d.getDate() - 1);
+  }
+  var y = d.getFullYear();
+  var m = String(d.getMonth() + 1).padStart(2, '0');
+  var day = String(d.getDate()).padStart(2, '0');
+  return y + '-' + m + '-' + day;
+}
+
+function getBaseStorageKey(priceKey) {
+  return 'gp10_pct_base_' + getTradingDayKey() + '_' + priceKey;
+}
+
+function getDailyBase(priceKey, currentValue) {
+  var storageKey = getBaseStorageKey(priceKey);
+  var saved = Number(localStorage.getItem(storageKey) || 0);
+  if (!saved && currentValue) {
+    saved = Number(currentValue);
+    try { localStorage.setItem(storageKey, String(saved)); } catch(e) {}
+  }
+  return saved;
+}
+
+function getPercentChange(baseValue, newValue) {
+  baseValue = Number(baseValue);
   newValue = Number(newValue);
-  if (!oldValue || !newValue) return { text: '', cls: 'change-same' };
-  var diff = ((newValue - oldValue) / oldValue) * 100;
+  if (!baseValue || !newValue) return { text: '', cls: 'change-same' };
+  var diff = ((newValue - baseValue) / baseValue) * 100;
   var rounded = Math.abs(diff).toFixed(2);
   if (diff > 0) return { text: '+%' + rounded, cls: 'change-up' };
   if (diff < 0) return { text: '-%' + rounded, cls: 'change-down' };
   return { text: '%0.00', cls: 'change-same' };
 }
 
-function formatPriceWithChange(newVal, oldVal) {
+function formatPriceWithChange(newVal, priceKey) {
   if (!newVal) return '—';
-  var ch = getPercentChange(oldVal, newVal);
+  var baseVal = getDailyBase(priceKey, newVal);
+  var ch = getPercentChange(baseVal, newVal);
   if (!ch.text) return fmt(newVal);
   return fmt(newVal) + '<span class="change-rate ' + ch.cls + '">' + ch.text + '</span>';
 }
 
-function updatePriceWithChange(el, row, newVal, oldVal, cls, isAlis) {
+function updatePriceWithChange(el, row, newVal, priceKey, cls, isAlis) {
   if (!el) return;
   if (!newVal) {
     el.textContent = '—';
     el.className = cls;
     return;
   }
-  el.innerHTML = formatPriceWithChange(newVal, oldVal);
+  var baseVal = getDailyBase(priceKey, newVal);
+  var visualPrev = Number(el.getAttribute('data-last') || 0);
+  el.innerHTML = formatPriceWithChange(newVal, priceKey);
   el.className = cls;
-  if (!oldVal) return;
-  if (newVal > oldVal) {
+  el.setAttribute('data-last', String(newVal));
+
+  if (!visualPrev) return;
+  if (newVal > visualPrev) {
     el.classList.add('price-up');
     if (row && isAlis) row.classList.add('flash-up'); else if (row) row.classList.add('flash-down');
-  } else if (newVal < oldVal) {
+  } else if (newVal < visualPrev) {
     el.classList.add('price-down');
     if (row && isAlis) row.classList.add('flash-down'); else if (row) row.classList.add('flash-up');
   } else {
