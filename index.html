@@ -127,13 +127,11 @@ body {
 .price-row:nth-child(even) { background: #202020; }
 .price-row .birim { font-size: 17px; font-weight: 500; color: #e8d9b0; }
 .price-row .alis, .price-row .satis { text-align: right; font-size: 17px; transition: color 0.4s ease; font-weight: 600; }
-
 .price-row .kk { text-align: right; font-size: 15px; font-weight: 600; color: #7ab0e0; }
 .change-rate { display:block; font-size:11px; line-height:1.1; margin-top:3px; font-weight:700; }
 .change-up { color:#2ecc71; }
 .change-down { color:#e74c3c; }
-.change-same { color:#999; }
-
+.change-same { color:inherit; opacity:.95; }
 .price-up   { color: #2ecc71 !important; font-weight: 700 !important; }
 .price-down { color: #e74c3c !important; font-weight: 700 !important; }
 .price-same { color: #f0e6c8 !important; }
@@ -542,15 +540,19 @@ var FORCE_TV = window.location.search.indexOf('tv=1') !== -1;
 
 // ?admin yoksa buton gizli
 if (window.location.search.indexOf('admin') === -1 || FORCE_TV) {
-  document.getElementById('adminBtn').style.display = 'none';
-  document.getElementById('bottomNav').style.display = 'none';
-  if (FORCE_TV) {
-    document.getElementById('tvBtn').style.display = 'none';
+  var adminBtnEl = document.getElementById('adminBtn');
+  var bottomNavEl = document.getElementById('bottomNav');
+  var tvBtnEl = document.getElementById('tvBtn');
+  if (adminBtnEl) adminBtnEl.style.display = 'none';
+  if (bottomNavEl) bottomNavEl.style.display = 'none';
+  if (FORCE_TV && tvBtnEl) {
+    tvBtnEl.style.display = 'none';
   }
 } else {
   var mb = document.getElementById('modBtn');
-  mb.style.display = 'flex';
-  document.getElementById('adminEkstra').style.display = 'block';
+  var adminEkstraEl = document.getElementById('adminEkstra');
+  if (mb) mb.style.display = 'flex';
+  if (adminEkstraEl) adminEkstraEl.style.display = 'block';
 }
 applyTVMode();
 updateModBtn();
@@ -664,7 +666,8 @@ function toggleTVMode() {
 }
 
 // Admin butonuna tıklandığında şifre sor
-document.getElementById('adminBtn').onclick = function() {
+var adminBtnBind = document.getElementById('adminBtn');
+if (adminBtnBind) adminBtnBind.onclick = function() {
   if (checkAdminSession()) {
     IS_ADMIN = true;
     openAdmin();
@@ -672,7 +675,8 @@ document.getElementById('adminBtn').onclick = function() {
     openAdminLogin();
   }
 };
-document.querySelector('.nav-item:last-child').onclick = function() {
+var lastNavItem = document.querySelector('.nav-item:last-child');
+if (lastNavItem) lastNavItem.onclick = function() {
   if (checkAdminSession()) {
     IS_ADMIN = true;
     openAdmin();
@@ -710,13 +714,13 @@ function renderTable() {
       var div = document.createElement('div');
       div.className = 'price-row'; div.id = rId;
       div.innerHTML = '<span class="birim">' + item.label + '</span>'
-        + '<span class="alis"  id="' + aId + '">' + (newA ? fmt(newA) : '—') + '</span>'
+        + '<span class="alis"  id="' + aId + '">' + formatPriceWithChange(newA, null) + '</span>'
         + '<span class="satis" id="' + sId + '">' + formatPriceWithChange(newS, null) + '</span>'
         + '<span class="kk"    id="' + kId + '">' + (newKK ? fmt(newKK) : '—') + '</span>';
       container.appendChild(div);
     } else {
-      updateCell(document.getElementById(aId), document.getElementById(rId), newA, prevPrices[item.id+'_a'], 'alis', true);
-      updatePriceWithChange(document.getElementById(sId), newS, prevPrices[item.id+'_s'], 'satis');
+      updatePriceWithChange(document.getElementById(aId), document.getElementById(rId), newA, prevPrices[item.id+'_a'], 'alis', true);
+      updatePriceWithChange(document.getElementById(sId), document.getElementById(rId), newS, prevPrices[item.id+'_s'], 'satis', false);
       var kkEl = document.getElementById(kId);
       if (kkEl) kkEl.textContent = newKK ? fmt(newKK) : '—';
     }
@@ -724,6 +728,7 @@ function renderTable() {
     if (newS) prevPrices[item.id+'_s'] = newS;
   });
 }
+
 
 function getPercentChange(oldValue, newValue) {
   oldValue = Number(oldValue);
@@ -739,19 +744,31 @@ function getPercentChange(oldValue, newValue) {
 function formatPriceWithChange(newVal, oldVal) {
   if (!newVal) return '—';
   var ch = getPercentChange(oldVal, newVal);
-  var sub = ch.text ? '<span class="change-rate ' + ch.cls + '">' + ch.text + '</span>' : '<span class="change-rate change-same"></span>';
-  return fmt(newVal) + sub;
+  if (!ch.text) return fmt(newVal);
+  return fmt(newVal) + '<span class="change-rate ' + ch.cls + '">' + ch.text + '</span>';
 }
 
-function updatePriceWithChange(el, newVal, oldVal, cls) {
-  if (!el || !newVal) return;
+function updatePriceWithChange(el, row, newVal, oldVal, cls, isAlis) {
+  if (!el) return;
+  if (!newVal) {
+    el.textContent = '—';
+    el.className = cls;
+    return;
+  }
   el.innerHTML = formatPriceWithChange(newVal, oldVal);
   el.className = cls;
   if (!oldVal) return;
-  if (newVal > oldVal) el.classList.add('price-up');
-  else if (newVal < oldVal) el.classList.add('price-down');
-  else el.classList.add('price-same');
+  if (newVal > oldVal) {
+    el.classList.add('price-up');
+    if (row && isAlis) row.classList.add('flash-up'); else if (row) row.classList.add('flash-down');
+  } else if (newVal < oldVal) {
+    el.classList.add('price-down');
+    if (row && isAlis) row.classList.add('flash-down'); else if (row) row.classList.add('flash-up');
+  } else {
+    el.classList.add('price-same');
+  }
 }
+
 
 function updateCell(el, row, newVal, oldVal, cls, isAlis) {
   if (!el || !newVal) return;
