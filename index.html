@@ -293,6 +293,24 @@ body.portfolio-mode #portfolioWrap{display:block !important}
   .portfolio-form-grid{grid-template-columns:1.2fr .8fr .9fr 1.1fr}
 }
 
+
+.top-switcher{display:flex;justify-content:center;gap:8px;padding:8px 12px 12px;background:#111;border-bottom:1px solid #2a2a2a}
+.top-switch-btn{border:1px solid #555;background:#2a2a2a;color:#c8b88a;border-radius:18px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer}
+.top-switch-btn.active{background:#3a2d00;border-color:#b8960c;color:#f0d060}
+body.portfolio-mode .top-switch-btn[data-view="portfolio"],
+body:not(.portfolio-mode) .top-switch-btn[data-view="prices"]{background:#3a2d00;border-color:#b8960c;color:#f0d060}
+body.portfolio-mode .doviz-bant,
+body.portfolio-mode .table-header,
+body.portfolio-mode #priceRows,
+body.portfolio-mode .update-bar,
+body.portfolio-mode .bottom-nav,
+body.portfolio-mode #desktopSide,
+body.portfolio-mode #adminEkstra{display:none !important}
+body.portfolio-mode #portfolioWrap{display:block !important}
+
+
+body.tv-mode .top-switcher{display:none !important}
+
 </style>
 </head>
 <body>
@@ -303,6 +321,11 @@ body.portfolio-mode #portfolioWrap{display:block !important}
   <span class="has-info" id="hasInfo"></span>
   <button class="admin-btn" id="adminBtn" onclick="openAdmin()">⋯</button>
   <button class="mod-btn" id="modBtn" onclick="toggleMod()">⚡ Normal</button>
+</div>
+
+<div class="top-switcher" id="topSwitcher">
+  <button class="top-switch-btn active" data-view="prices" id="btnPricesTop">Fiyatlar</button>
+  <button class="top-switch-btn" data-view="portfolio" id="btnPortfolioTop">Varlıklarım</button>
 </div>
 
 <div class="doviz-bant"><div class="doviz-bant-inner" id="dovizBant">⏳ Döviz yükleniyor...</div></div>
@@ -416,8 +439,7 @@ body.portfolio-mode #portfolioWrap{display:block !important}
   <button class="nav-item active"><span class="nav-icon">📊</span>Fiyat Panosu</button>
   <button class="nav-item" onclick="openAdmin()"><span class="nav-icon">⚙️</span>Yönetici</button>
 
-  <button class="nav-item" id="navPortfolio"><span class="nav-icon">💼</span>Varlıklarım</button>
-</div>
+  </div>
 
 <div class="overlay" id="overlay" onclick="if(event.target===this)closeAdmin()">
   <div class="admin-panel">
@@ -1894,24 +1916,24 @@ setInterval(function() {
   }
   function showPortfolioMode(){
     document.body.classList.add('portfolio-mode');
-    var pBtn = document.getElementById('navPortfolio');
-    var navs = document.querySelectorAll('#bottomNav .nav-item');
-    navs.forEach(function(n){ n.classList.remove('active'); });
+    var pBtn = document.getElementById('btnPortfolioTop');
+    var firstBtn = document.getElementById('btnPricesTop');
     if (pBtn) pBtn.classList.add('active');
+    if (firstBtn) firstBtn.classList.remove('active');
     renderPortfolio();
   }
   function showPriceMode(){
     document.body.classList.remove('portfolio-mode');
-    var navs = document.querySelectorAll('#bottomNav .nav-item');
-    navs.forEach(function(n){ n.classList.remove('active'); });
-    var firstBtn = document.querySelector('#bottomNav .nav-item');
+    var pBtn = document.getElementById('btnPortfolioTop');
+    var firstBtn = document.getElementById('btnPricesTop');
+    if (pBtn) pBtn.classList.remove('active');
     if (firstBtn) firstBtn.classList.add('active');
   }
 
   document.addEventListener('DOMContentLoaded', function(){
-    var navPf = document.getElementById('navPortfolio');
+    var navPf = document.getElementById('btnPortfolioTop');
     if (navPf) navPf.onclick = showPortfolioMode;
-    var firstBtn = document.querySelector('#bottomNav .nav-item');
+    var firstBtn = document.getElementById('btnPricesTop');
     if (firstBtn) firstBtn.onclick = showPriceMode;
     var saveBtn = document.getElementById('pfSaveBtn');
     if (saveBtn) saveBtn.onclick = savePortfolioItem;
