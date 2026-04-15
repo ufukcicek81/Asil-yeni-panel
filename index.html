@@ -1774,6 +1774,35 @@ setInterval(function() {
     var map = {gram_altin:'Gram Altın', has_altin:'Has Altın', '22ayar':'22 Ayar', '24ayar':'24 Ayar', ceyrek:'Çeyrek', yarim:'Yarım', tam:'Tam', gremise:'Gremise', resat:'Reşat', ata:'Ata', hurda_altin:'Hurda Altın', usd:'Dolar', eur:'Euro'};
     return map[type] || type;
   }
+  function pfParseMoney(val){
+    if (val == null) return 0;
+    var s = String(val).trim().replace(/₺|TL|\$/gi,'').trim();
+    // If both comma and dot exist, decide decimal separator by last occurrence
+    if (s.indexOf(',') !== -1 && s.indexOf('.') !== -1) {
+      if (s.lastIndexOf(',') > s.lastIndexOf('.')) {
+        s = s.replace(/\./g, '').replace(',', '.');
+      } else {
+        s = s.replace(/,/g, '');
+      }
+    } else if (s.indexOf(',') !== -1) {
+      s = s.replace(',', '.');
+    }
+    var n = Number(s);
+    return isNaN(n) ? 0 : n;
+  }
+  function pfFindCurrencyFromBand(code){
+    try {
+      var txt = document.getElementById('dovizBant').textContent || '';
+      // Match like USD 44.24 / 45.10 ₺ or USD 44,24 / 45,10 ₺
+      var re = new RegExp(code + '\\s+([\\d.,]+)\\s*\\/\\s*([\\d.,]+)', 'i');
+      var m = txt.match(re);
+      if (m) {
+        var buy = pfParseMoney(m[1]);
+        if (buy) return buy;
+      }
+    } catch(e){}
+    return 0;
+  }
   function pfFindPriceByType(type){
     var aliases = {
       gram_altin:['gram'],
@@ -1789,20 +1818,12 @@ setInterval(function() {
       hurda_altin:['hurda']
     };
     if (type === 'usd') {
-      try {
-        var txt = document.getElementById('dovizBant').textContent || '';
-        var m = txt.match(/USD\s+([\d.,]+)/i);
-        if (m) return Number(m[1].replace(/\./g,'').replace(',','.'));
-      } catch(e){}
-      return 0;
+      var usd = pfFindCurrencyFromBand('USD');
+      return usd || 0;
     }
     if (type === 'eur') {
-      try {
-        var txt = document.getElementById('dovizBant').textContent || '';
-        var m = txt.match(/EUR\s+([\d.,]+)/i);
-        if (m) return Number(m[1].replace(/\./g,'').replace(',','.'));
-      } catch(e){}
-      return 0;
+      var eur = pfFindCurrencyFromBand('EUR');
+      return eur || 0;
     }
     var keys = aliases[type] || [];
     var items = getActiveItems();
